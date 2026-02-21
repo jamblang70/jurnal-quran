@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Jurnal Quran - Arief</title>
+    
+    <!-- PWA Tags -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#059669">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+    <!-- Libraries -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <style>
+        @keyframes bounce-subtle {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-12px); }
+        }
+        .animate-bounce-subtle { animation: bounce-subtle 3s ease-in-out infinite; }
+        .animate-spin-slow { animation: spin 10s linear infinite; }
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        body { overscroll-behavior-y: none; -webkit-tap-highlight-color: transparent; user-select: none; background-color: #f8fafc; }
+        input { user-select: auto; }
+        ::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useMemo, useEffect } = React;
+        
+        // --- DATA MASTER ---
+        const SURAH_DATA = [
+          { number: 1, name: "Al-Fatihah", verses: 7, mean: "Pembukaan" },
+          { number: 2, name: "Al-Baqarah", verses: 286, mean: "Sapi Betina" },
+          { number: 3, name: "Ali 'Imran", verses: 200, mean: "Keluarga Imran" },
+          { number: 4, name: "An-Nisa'", verses: 176, mean: "Wanita" },
+          { number: 5, name: "Al-Ma'idah", verses: 120, mean: "Hidangan" },
+          { number: 6, name: "Al-An'am", verses: 165, mean: "Binatang Ternak" },
+          { number: 7, name: "Al-A'raf", verses: 206, mean: "Tempat yang Tertinggi" },
+          { number: 8, name: "Al-Anfal", verses: 75, mean: "Rampasan Perang" },
+          { number: 9, name: "At-Taubah", verses: 129, mean: "Pengampunan" },
+          { number: 10, name: "Yunus", verses: 109, mean: "Nabi Yunus" },
+          { number: 11, name: "Hud", verses: 123, mean: "Nabi Hud" },
+          { number: 12, name: "Yusuf", verses: 111, mean: "Nabi Yusuf" },
+          { number: 13, name: "Ar-Ra'd", verses: 43, mean: "Guruh" },
+          { number: 14, name: "Ibrahim", verses: 52, mean: "Nabi Ibrahim" },
+          { number: 15, name: "Al-Hijr", verses: 99, mean: "Gunung Madyan" },
+          { number: 16, name: "An-Nahl", verses: 128, mean: "Lebah" },
+          { number: 17, name: "Al-Isra'", verses: 111, mean: "Perjalanan Malam" },
+          { number: 18, name: "Al-Kahf", verses: 110, mean: "Penghuni-penghuni Gua" },
+          { number: 19, name: "Maryam", verses: 98, mean: "Maryam" },
+          { number: 20, name: "Ta Ha", verses: 135, mean: "Ta Ha" },
+          { number: 21, name: "Al-Anbiya'", verses: 112, mean: "Nabi-Nabi" },
+          { number: 22, name: "Al-Hajj", verses: 78, mean: "Haji" },
+          { number: 23, name: "Al-Mu'minun", verses: 118, mean: "Orang-orang Mukmin" },
+          { number: 24, name: "An-Nur", verses: 64, mean: "Cahaya" },
+          { number: 25, name: "Al-Furqan", verses: 77, mean: "Pembeda" },
+          { number: 26, name: "Asy-Syu'ara'", verses: 227, mean: "Para Penyair" },
+          { number: 27, name: "An-Naml", verses: 93, mean: "Semut" },
+          { number: 28, name: "Al-Qasas", verses: 88, mean: "Kisah-kisah" },
+          { number: 29, name: "Al-Ankabut", verses: 69, mean: "Laba-laba" },
+          { number: 30, name: "Ar-Rum", verses: 60, mean: "Bangsa Romawi" },
+          { number: 31, name: "Luqman", verses: 34, mean: "Keluarga Luqman" },
+          { number: 32, name: "As-Sajdah", verses: 30, mean: "Sujud" },
+          { number: 33, name: "Al-Ahzab", verses: 73, mean: "Golongan-golongan" },
+          { number: 34, name: "Saba'", verses: 54, mean: "Kaum Saba'" },
+          { number: 35, name: "Fatir", verses: 45, mean: "Pencipta" },
+          { number: 36, name: "Ya Sin", verses: 83, mean: "Ya Sin" },
+          { number: 37, name: "As-Saffat", verses: 182, mean: "Barisan-barisan" },
+          { number: 38, name: "Sad", verses: 88, mean: "Sad" },
+          { number: 39, name: "Az-Zumar", verses: 75, mean: "Rombongan-rombongan" },
+          { number: 40, name: "Ghafir", verses: 85, mean: "Yang Mengampuni" },
+          { number: 41, name: "Fussilat", verses: 54, mean: "Yang Dijelaskan" },
+          { number: 42, name: "Asy-Syura", verses: 53, mean: "Musyawarah" },
+          { number: 43, name: "Az-Zukhruf", verses: 89, mean: "Perhiasan" },
+          { number: 44, name: "Ad-Dukhan", verses: 59, mean: "Kabut" },
+          { number: 45, name: "Al-Jasiyah", verses: 37, mean: "Yang Berlutut" },
+          { number: 46, name: "Al-Ahqaf", verses: 35, mean: "Bukit-bukit Pasir" },
+          { number: 47, name: "Muhammad", verses: 38, mean: "Nabi Muhammad" },
+          { number: 48, name: "Al-Fath", verses: 29, mean: "Kemenangan" },
+          { number: 49, name: "Al-Hujurat", verses: 18, mean: "Kamar-kamar" },
+          { number: 50, name: "Qaf", verses: 45, mean: "Qaf" },
+          { number: 51, name: "Az-Zariyat", verses: 60, mean: "Angin yang Menerbangkan" },
+          { number: 52, name: "At-Tur", verses: 49, mean: "Bukit" },
+          { number: 53, name: "An-Najm", verses: 62, mean: "Bintang" },
+          { number: 54, name: "Al-Qamar", verses: 55, mean: "Bulan" },
+          { number: 55, name: "Ar-Rahman", verses: 78, mean: "Yang Maha Pemurah" },
+          { number: 56, name: "Al-Waqi'ah", verses: 96, mean: "Hari Kiamat" },
+          { number: 57, name: "Al-Hadid", verses: 29, mean: "Besi" },
+          { number: 58, name: "Al-Mujadilah", verses: 22, mean: "Wanita yang Menggugat" },
+          { number: 59, name: "Al-Hasyr", verses: 24, mean: "Pengusiran" },
+          { number: 60, name: "Al-Mumtahanah", verses: 13, mean: "Wanita yang Diuji" },
+          { number: 61, name: "As-Saff", verses: 14, mean: "Barisan" },
+          { number: 62, name: "Al-Jumu'ah", verses: 11, mean: "Hari Jumat" },
+          { number: 63, name: "Al-Munafiqun", verses: 11, mean: "Orang-orang Munafik" },
+          { number: 64, name: "At-Tagabun", verses: 18, mean: "Hari Dinampakkan Kesalahan" },
+          { number: 65, name: "At-Talaq", verses: 12, mean: "Talak" },
+          { number: 66, name: "At-Tahrim", verses: 12, mean: "Mengharamkan" },
+          { number: 67, name: "Al-Mulk", verses: 30, mean: "Kerajaan" },
+          { number: 68, name: "Al-Qalam", verses: 52, mean: "Pena" },
+          { number: 69, name: "Al-Haqqah", verses: 52, mean: "Hari Kiamat" },
+          { number: 70, name: "Al-Ma'arij", verses: 44, mean: "Tempat Naik" },
+          { number: 71, name: "Nuh", verses: 28, mean: "Nabi Nuh" },
+          { number: 72, name: "Al-Jinn", verses: 28, mean: "Jin" },
+          { number: 73, name: "Al-Muzzammil", verses: 20, mean: "Orang yang Berselimut" },
+          { number: 74, name: "Al-Muddassir", verses: 56, mean: "Orang yang Berkemul" },
+          { number: 75, name: "Al-Qiyamah", verses: 40, mean: "Hari Kiamat" },
+          { number: 76, name: "Al-Insan", verses: 31, mean: "Manusia" },
+          { number: 77, name: "Al-Mursalat", verses: 50, mean: "Malaikat yang Diutus" },
+          { number: 78, name: "An-Naba'", verses: 40, mean: "Berita Besar" },
+          { number: 79, name: "An-Nazi'at", verses: 46, mean: "Malaikat Pencabut" },
+          { number: 80, name: "'Abasa", verses: 42, mean: "Ia Bermuka Masam" },
+          { number: 81, name: "At-Takwir", verses: 29, mean: "Menggulung" },
+          { number: 82, name: "Al-Infitar", verses: 19, mean: "Terbelah" },
+          { number: 83, name: "Al-Mutaffifin", verses: 36, mean: "Orang-orang Curang" },
+          { number: 84, name: "Al-Insyiqaq", verses: 25, mean: "Terbelah" },
+          { number: 85, name: "Al-Buruj", verses: 22, mean: "Gugusan Bintang" },
+          { number: 86, name: "At-Tariq", verses: 17, mean: "Yang Datang di Malam Hari" },
+          { number: 87, name: "Al-A'la", verses: 19, mean: "Yang Paling Tinggi" },
+          { number: 88, name: "Al-Ghasyiyah", verses: 26, mean: "Hari Pembalasan" },
+          { number: 89, name: "Al-Fajr", verses: 30, mean: "Fajar" },
+          { number: 90, name: "Al-Balad", verses: 20, mean: "Negeri" },
+          { number: 91, name: "Asy-Syams", verses: 15, mean: "Matahari" },
+          { number: 92, name: "Al-Lail", verses: 21, mean: "Malam" },
+          { number: 93, name: "Ad-Duha", verses: 11, mean: "Waktu Duha" },
+          { number: 94, name: "Al-Insyirah", verses: 8, mean: "Kelapangan" },
+          { number: 95, name: "At-Tin", verses: 8, mean: "Buah Tin" },
+          { number: 96, name: "Al-'Alaq", verses: 19, mean: "Segumpal Darah" },
+          { number: 97, name: "Al-Qadr", verses: 5, mean: "Kemuliaan" },
+          { number: 98, name: "Al-Bayyinah", verses: 8, mean: "Bukti" },
+          { number: 99, name: "Az-Zalzalah", verses: 8, mean: "Keguncangan" },
+          { number: 100, name: "Al-'Adiyat", verses: 11, mean: "Kuda Perang" },
+          { number: 101, name: "Al-Qari'ah", verses: 11, mean: "Hari Kiamat" },
+          { number: 102, name: "At-Takatsur", verses: 8, mean: "Bermegah-megahan" },
+          { number: 103, name: "Al-'Asr", verses: 3, mean: "Masa" },
+          { number: 104, name: "Al-Humazah", verses: 9, mean: "Pengumpat" },
+          { number: 105, name: "Al-Fil", verses: 5, mean: "Gajah" },
+          { number: 106, name: "Quraisy", verses: 4, mean: "Suku Quraisy" },
+          { number: 107, name: "Al-Ma'un", verses: 7, mean: "Barang-barang Berguna" },
+          { number: 108, name: "Al-Kautsar", verses: 3, mean: "Nikmat yang Banyak" },
+          { number: 109, name: "Al-Kafirun", verses: 6, mean: "Orang-orang Kafir" },
+          { number: 110, name: "An-Nasr", verses: 3, mean: "Pertolongan" },
+          { number: 111, name: "Al-Lahab", verses: 5, mean: "Gejolak Api" },
+          { number: 112, name: "Al-Ikhlas", verses: 4, mean: "Ikhlas" },
+          { number: 113, name: "Al-Falaq", verses: 5, mean: "Waktu Subuh" },
+          { number: 114, name: "An-Nas", verses: 6, mean: "Manusia" }
+        ];
+
+        const JUZ_START = [
+          { juz: 1, s: 1, v: 1 }, { juz: 2, s: 2, v: 142 }, { juz: 3, s: 2, v: 253 },
+          { juz: 4, s: 3, v: 93 }, { juz: 5, s: 4, v: 24 }, { juz: 6, s: 4, v: 148 },
+          { juz: 7, s: 5, v: 82 }, { juz: 8, s: 6, v: 111 }, { juz: 9, s: 7, v: 88 },
+          { juz: 10, s: 8, v: 41 }, { juz: 11, s: 9, v: 93 }, { juz: 12, s: 11, v: 6 },
+          { juz: 13, s: 12, v: 53 }, { juz: 14, s: 15, v: 1 }, { juz: 15, s: 17, v: 1 },
+          { juz: 16, s: 18, v: 75 }, { juz: 17, s: 21, v: 1 }, { juz: 18, s: 23, v: 1 },
+          { juz: 19, s: 25, v: 21 }, { juz: 20, s: 27, v: 56 }, { juz: 21, s: 29, v: 46 },
+          { juz: 22, s: 33, v: 31 }, { juz: 23, s: 36, v: 28 }, { juz: 24, s: 39, v: 32 },
+          { juz: 25, s: 41, v: 47 }, { juz: 26, s: 46, v: 1 }, { juz: 27, s: 51, v: 31 },
+          { juz: 28, s: 58, v: 1 }, { juz: 29, s: 67, v: 1 }, { juz: 30, s: 78, v: 1 }
+        ];
+
+        // --- ICON WRAPPER ---
+        const Icon = ({ name, ...props }) => {
+            useEffect(() => { lucide.createIcons(); }, [name]);
+            return <i data-lucide={name} {...props}></i>;
+        };
+
+        // --- HELPERS ---
+        const getAbsoluteVerseCount = (surahNum, verseNum) => {
+          let total = 0;
+          for (let i = 1; i < surahNum; i++) {
+            const s = SURAH_DATA.find(x => x.number === i);
+            if (s) total += s.verses;
+          }
+          total += verseNum;
+          return total;
+        };
+
+        const getJuzForVerse = (surahNum, verseNum) => {
+          let v = verseNum === 0 ? 1 : verseNum;
+          for (let i = 0; i < JUZ_START.length; i++) {
+            const curr = JUZ_START[i];
+            const next = JUZ_START[i + 1];
+            if (!next) return 30;
+            if (surahNum < next.s || (surahNum === next.s && v < next.v)) return curr.juz;
+          }
+          return 30;
+        };
+
+        const getJuzSegments = (juzNum) => {
+          const startMarker = JUZ_START.find(j => j.juz === juzNum);
+          const endMarker = juzNum === 30 ? null : JUZ_START.find(j => j.juz === juzNum + 1);
+          const segments = [];
+          let currentSurah = startMarker.s;
+          let currentVerse = startMarker.v;
+          while (true) {
+            const surahInfo = SURAH_DATA.find(s => s.number === currentSurah);
+            if (!surahInfo) break;
+            const maxVerse = surahInfo.verses;
+            if (endMarker && currentSurah === endMarker.s) {
+              segments.push({ s: currentSurah, start: currentVerse, end: endMarker.v - 1 });
+              break;
+            } else {
+              segments.push({ s: currentSurah, start: currentVerse, end: maxVerse });
+              if (!endMarker && currentSurah === 114) break;
+              currentSurah++;
+              currentVerse = 1;
+            }
+          }
+          return segments;
+        };
+
+        const isJuzComplete = (juzNum, progressObj) => {
+          const segments = getJuzSegments(juzNum);
+          return segments.every(seg => (progressObj[seg.s] || 0) >= seg.end);
+        };
+
+        const JUZ_LIST = Array.from({ length: 30 }, (_, i) => {
+          const num = i + 1;
+          const start = JUZ_START.find(j => j.juz === num);
+          const surahName = SURAH_DATA.find(s => s.number === start.s).name;
+          return { number: num, start: `${surahName} ayat ${start.v}` };
+        });
+
+        const loadLocal = (key, fallback) => {
+          if (typeof window !== 'undefined') {
+            const saved = localStorage.getItem(key);
+            if (saved) {
+              try { return JSON.parse(saved); } catch (e) { return saved; }
+            }
+          }
+          return fallback;
+        };
+
+        // --- MAIN APP ---
+        function App() {
+            const [viewMode, setViewMode] = useState('surah');
+            const [searchTerm, setSearchTerm] = useState("");
+            const [showScrollTop, setShowScrollTop] = useState(false);
+            const [progress, setProgress] = useState(() => loadLocal('quran-progress', {}));
+            const [lastRead, setLastRead] = useState(() => loadLocal('quran-last-read', null));
+            const [streak, setStreak] = useState(() => parseInt(loadLocal('quran-streak', 0)));
+            const [lastActiveDate, setLastActiveDate] = useState(() => loadLocal('quran-last-date', null));
+            const [khatamCount, setKhatamCount] = useState(() => parseInt(loadLocal('quran-khatam', 0)));
+            const [targetJuz, setTargetJuz] = useState(() => loadLocal('quran-target-juz', null));
+            const [dailyStartVerses, setDailyStartVerses] = useState(() => parseInt(loadLocal('quran-daily-start', 0)));
+            const [targetDate, setTargetDate] = useState(() => loadLocal('quran-target-date', new Date().toLocaleDateString('en-CA')));
+
+            useEffect(() => {
+                localStorage.setItem('quran-progress', JSON.stringify(progress));
+                if (lastRead) localStorage.setItem('quran-last-read', lastRead);
+                localStorage.setItem('quran-streak', streak);
+                if (lastActiveDate) localStorage.setItem('quran-last-date', lastActiveDate);
+                localStorage.setItem('quran-khatam', khatamCount);
+                if (targetJuz) localStorage.setItem('quran-target-juz', targetJuz); 
+                else localStorage.removeItem('quran-target-juz');
+                localStorage.setItem('quran-daily-start', dailyStartVerses);
+                localStorage.setItem('quran-target-date', targetDate);
+            }, [progress, lastRead, streak, lastActiveDate, khatamCount, targetJuz, dailyStartVerses, targetDate]);
+
+            useEffect(() => {
+                const handleScroll = () => setShowScrollTop(window.scrollY > 300);
+                window.addEventListener('scroll', handleScroll);
+                return () => window.removeEventListener('scroll', handleScroll);
+            }, []);
+
+            const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+            const recordActivity = () => {
+                const today = new Date().toLocaleDateString('en-CA'); 
+                if (lastActiveDate !== today) {
+                    if (lastActiveDate) {
+                        const lastDate = new Date(lastActiveDate);
+                        const currentDate = new Date(today);
+                        const diffDays = Math.ceil(Math.abs(currentDate - lastDate) / (1000 * 60 * 60 * 24)); 
+                        if (diffDays === 1) setStreak(prev => prev + 1); 
+                        else setStreak(1); 
+                    } else { setStreak(1); }
+                    setLastActiveDate(today);
+                }
+                if (targetDate !== today) {
+                    setTargetDate(today);
+                    setDailyStartVerses(currentTotalVerses);
+                }
+            };
+
+            const currentTotalVerses = useMemo(() => {
+                let total = 0;
+                SURAH_DATA.forEach(s => { total += progress[s.number] || 0; });
+                return total;
+            }, [progress]);
+
+            const targetStats = useMemo(() => {
+                if (!targetJuz) return null;
+                let targetTotalVerses;
+                let targetLabel;
+                if (parseInt(targetJuz) === 31) {
+                    targetTotalVerses = 6236;
+                    targetLabel = "Khatam";
+                } else {
+                    const juzInfo = JUZ_START.find(j => j.juz === parseInt(targetJuz));
+                    if (!juzInfo) return null;
+                    targetTotalVerses = getAbsoluteVerseCount(juzInfo.s, juzInfo.v - 1);
+                    targetLabel = `Awal Juz ${targetJuz}`;
+                }
+                const versesReadToday = Math.max(0, currentTotalVerses - dailyStartVerses);
+                const versesToReadToday = Math.max(1, targetTotalVerses - dailyStartVerses); 
+                const isReached = currentTotalVerses >= targetTotalVerses;
+                let percentage = isReached ? 100 : Math.round((versesReadToday / versesToReadToday) * 100);
+                return { targetLabel, versesReadToday, versesToReadToday, percentage, isReached };
+            }, [targetJuz, currentTotalVerses, dailyStartVerses]);
+
+            const stats = useMemo(() => {
+                let surahsCompleted = 0;
+                SURAH_DATA.forEach(surah => {
+                  if ((progress[surah.number] || 0) === surah.verses) surahsCompleted += 1;
+                });
+                let juzCompleted = 0;
+                for (let i = 1; i <= 30; i++) {
+                  if (isJuzComplete(i, progress)) juzCompleted += 1;
+                }
+                const percentage = Math.round((currentTotalVerses / 6236) * 100);
+                return { percentage, surahsCompleted, juzCompleted, isKhatam: currentTotalVerses === 6236 };
+            }, [progress, currentTotalVerses]);
+
+            const updateVerse = (surahNumber, verse) => {
+                recordActivity();
+                const surah = SURAH_DATA.find(s => s.number === surahNumber);
+                let newVerse = Math.max(0, Math.min(verse, surah.verses));
+                setProgress(prev => ({ ...prev, [surahNumber]: newVerse }));
+                setLastRead(surahNumber);
+            };
+
+            const toggleComplete = (surahNumber) => {
+                const surah = SURAH_DATA.find(s => s.number === surahNumber);
+                updateVerse(surah.number, (progress[surah.number] || 0) === surah.verses ? 0 : surah.verses);
+            };
+
+            const toggleJuz = (juzNumber) => {
+                recordActivity();
+                const segments = getJuzSegments(juzNumber);
+                const completed = isJuzComplete(juzNumber, progress);
+                setProgress(prev => {
+                    const next = { ...prev };
+                    segments.forEach(seg => {
+                        next[seg.s] = completed ? Math.min(next[seg.s] || 0, seg.start - 1) : Math.max(next[seg.s] || 0, seg.end);
+                    });
+                    return next;
+                });
+                setLastRead(segments[segments.length - 1].s);
+            };
+
+            const filteredSurahs = SURAH_DATA.filter(s => 
+                s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
+                s.number.toString() === searchTerm
+            );
+
+            const filteredJuz = JUZ_LIST.filter(j => j.number.toString().includes(searchTerm));
+
+            return (
+                <div className="pb-24">
+                    <header className="bg-emerald-600 text-white pt-8 pb-14 px-5 rounded-b-[3rem] shadow-xl relative overflow-hidden">
+                        <div className="relative z-10">
+                            <div className="flex justify-between items-center mb-6">
+                                <div>
+                                    <h1 className="text-2xl font-black tracking-tight">Jurnal Quran</h1>
+                                    <p className="text-emerald-100 text-[11px] font-bold uppercase">Progress Bacaan Quran</p>
+                                </div>
+                                <div className="flex gap-2">
+                                    {streak > 0 && <div className="bg-white/20 px-3 py-1.5 rounded-full text-[10px] font-black">🔥 {streak}d</div>}
+                                    {khatamCount > 0 && <div className="bg-white/20 px-3 py-1.5 rounded-full text-[10px] font-black">🏆 {khatamCount}x</div>}
+                                </div>
+                            </div>
+                            <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-6 border border-white/20">
+                                <div className="flex justify-between items-baseline mb-4">
+                                    <span className="text-[10px] font-black uppercase text-emerald-100 opacity-80">Total Progress</span>
+                                    <span className="text-5xl font-black tabular-nums">{stats.percentage}%</span>
+                                </div>
+                                <div className="w-full bg-black/10 rounded-full h-4 mb-4 overflow-hidden">
+                                    <div className="bg-white h-full rounded-full transition-all duration-1000" style={{ width: `${stats.percentage}%` }}></div>
+                                </div>
+                                <div className="grid grid-cols-2 gap-4 text-center">
+                                    <div className="bg-white/5 p-2 rounded-xl text-xs font-black">{stats.surahsCompleted} / 114 Surah</div>
+                                    <div className="bg-white/5 p-2 rounded-xl text-xs font-black">{stats.juzCompleted} / 30 Juz</div>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+
+                    <main className="px-5 -mt-8 relative z-10 space-y-6">
+                        {/* Target Section */}
+                        <section className="bg-white rounded-[2rem] shadow-xl p-6 border border-slate-100">
+                           <div className="flex items-center justify-between mb-4">
+                              <span className="text-emerald-600 font-black text-[11px] uppercase tracking-wider">🎯 Target Hari Ini</span>
+                              {targetJuz && <button onClick={() => setTargetJuz(null)} className="text-[10px] font-black text-slate-400">GANTI</button>}
+                           </div>
+                           {!targetJuz ? (
+                                <select className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-black appearance-none"
+                                    onChange={(e) => { setTargetJuz(e.target.value); setDailyStartVerses(currentTotalVerses); }}
+                                    defaultValue=""
+                                >
+                                    <option value="" disabled>Mau sampai mana hari ini?</option>
+                                    {JUZ_LIST.map(j => <option key={j.number} value={j.number}>Mencapai Juz {j.number}</option>)}
+                                    <option value="31">👑 Selesai Khatam</option>
+                                </select>
+                           ) : (
+                                <div>
+                                    <div className="flex justify-between items-end mb-2">
+                                        <span className="text-xs font-black">{targetStats.targetLabel}</span>
+                                        <span className="text-emerald-600 font-black text-2xl">{targetStats.percentage}%</span>
+                                    </div>
+                                    <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden mb-3">
+                                        <div className="bg-emerald-500 h-full rounded-full transition-all duration-700" style={{ width: `${targetStats.percentage}%` }}></div>
+                                    </div>
+                                    <p className="text-[10px] font-black text-slate-400">{targetStats.versesReadToday} / {targetStats.versesToReadToday} Ayat</p>
+                                </div>
+                           )}
+                        </section>
+
+                        {/* Fitur Terakhir Dibaca (Last Read) yang Hilang */}
+                        {lastRead && viewMode === 'surah' && !searchTerm && (
+                            <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 p-6 rounded-[2.5rem] shadow-2xl border border-emerald-400/30 text-white animate-in slide-in-from-top-4">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md"><Icon name="refresh-cw" size={14} className="animate-spin-slow" /></div>
+                                    <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">Terakhir Dibaca</span>
+                                </div>
+                                {(() => {
+                                    const s = SURAH_DATA.find(x => x.number === lastRead);
+                                    const current = progress[s.number] || 0;
+                                    return (
+                                        <div className="flex justify-between items-center">
+                                            <div>
+                                                <h3 className="font-black text-2xl leading-tight tracking-tight">{s.name}</h3>
+                                                <p className="text-emerald-100 text-[11px] font-black mt-1 tabular-nums bg-black/10 inline-block px-3 py-1 rounded-full uppercase tracking-widest">Ayat {current} / {s.verses}</p>
+                                            </div>
+                                            <button 
+                                                onClick={() => {
+                                                    const el = document.getElementById(`surah-${s.number}`);
+                                                    if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                }}
+                                                className="bg-white text-emerald-700 p-4 rounded-2xl shadow-xl active:scale-90 transition-transform"
+                                            >
+                                                <Icon name="chevron-right" size={24} />
+                                            </button>
+                                        </div>
+                                    )
+                                })()}
+                            </div>
+                        )}
+
+                        {/* Search & Tabs */}
+                        <div className="sticky top-4 z-40 space-y-3">
+                            <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-xl p-1.5 flex gap-1 border border-white">
+                                <button onClick={() => {setViewMode('surah'); scrollToTop();}} className={`flex-1 py-3 rounded-xl text-[10px] font-black transition-all ${viewMode === 'surah' ? 'bg-emerald-600 text-white' : 'text-slate-500'}`}>SURAH</button>
+                                <button onClick={() => {setViewMode('juz'); scrollToTop();}} className={`flex-1 py-3 rounded-xl text-[10px] font-black transition-all ${viewMode === 'juz' ? 'bg-emerald-600 text-white' : 'text-slate-500'}`}>JUZ</button>
+                                <button onClick={() => setViewMode('settings')} className={`flex-1 py-3 rounded-xl text-[10px] font-black transition-all ${viewMode === 'settings' ? 'bg-emerald-600 text-white' : 'text-slate-500'}`}>MENU</button>
+                            </div>
+                            {viewMode !== 'settings' && (
+                                <div className="bg-white/90 rounded-2xl shadow-lg p-4 border border-slate-100">
+                                    <input type="text" placeholder="Cari..." className="w-full bg-transparent outline-none font-black text-sm" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                                </div>
+                            )}
+                        </div>
+
+                        {/* List Area */}
+                        {viewMode === 'surah' && filteredSurahs.map(surah => {
+                            const cur = progress[surah.number] || 0;
+                            const comp = cur === surah.verses;
+                            return (
+                                <div key={surah.number} id={`surah-${surah.number}`} className={`bg-white rounded-[2.5rem] p-6 border-2 transition-all ${comp ? 'border-emerald-500 bg-emerald-50/20' : 'border-slate-100'}`}>
+                                    <div className="flex justify-between items-start mb-6">
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-12 h-12 rounded-2xl flex items-center justify-center font-black ${comp ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{surah.number}</div>
+                                            <div>
+                                                <h3 className="font-black text-lg">{surah.name}</h3>
+                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{surah.verses} Ayat • Juz {getJuzForVerse(surah.number, cur)}</p>
+                                            </div>
+                                        </div>
+                                        <button onClick={() => toggleComplete(surah.number)} className={comp ? 'text-emerald-500' : 'text-slate-200'}>
+                                            <Icon name={comp ? "check-circle" : "circle"} size={36} />
+                                        </button>
+                                    </div>
+                                    <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100">
+                                        <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase mb-3"><span>Progress</span><span>{Math.round((cur/surah.verses)*100)}%</span></div>
+                                        <div className="h-3 bg-slate-200 rounded-full overflow-hidden mb-5"><div className="bg-emerald-500 h-full" style={{ width: `${(cur/surah.verses)*100}%` }}></div></div>
+                                        <div className="flex items-center gap-2">
+                                            <button onClick={() => updateVerse(surah.number, cur - 1)} className="w-14 h-14 bg-white border-2 border-slate-100 rounded-2xl font-black text-2xl shadow-sm">-</button>
+                                            <div className="flex-1 relative">
+                                                <input type="number" className="w-full text-center font-black text-2xl bg-white border-2 border-slate-100 rounded-2xl py-3" value={cur === 0 ? '' : cur} placeholder="0" onChange={e => updateVerse(surah.number, parseInt(e.target.value) || 0)} />
+                                                <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 text-[8px] font-black text-slate-400 uppercase bg-white px-2 rounded-full border border-slate-100">Ayat</span>
+                                            </div>
+                                            <button onClick={() => updateVerse(surah.number, cur + 1)} className="w-14 h-14 bg-emerald-600 text-white rounded-2xl font-black text-2xl shadow-xl">+</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+
+                        {viewMode === 'juz' && filteredJuz.map(juz => {
+                            const comp = isJuzComplete(juz.number, progress);
+                            return (
+                                <div key={juz.number} onClick={() => toggleJuz(juz.number)} className={`bg-white rounded-[2rem] p-6 border-2 flex items-center justify-between ${comp ? 'border-emerald-500 bg-emerald-50/20' : 'border-slate-100'}`}>
+                                    <div className="flex items-center gap-4">
+                                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl ${comp ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{juz.number}</div>
+                                        <div><h3 className="font-black text-lg">Juz {juz.number}</h3><p className="text-[10px] font-black text-slate-400 uppercase leading-none mt-1">{juz.start}</p></div>
+                                    </div>
+                                    <div className={comp ? 'text-emerald-500' : 'text-slate-200'}><Icon name={comp ? "check-circle" : "circle"} size={36} /></div>
+                                </div>
+                            );
+                        })}
+
+                        {viewMode === 'settings' && (
+                            <div className="space-y-6">
+                                <div className="bg-white rounded-[2rem] p-8 shadow-xl border border-slate-100 text-center">
+                                    <div className="inline-flex bg-emerald-100 text-emerald-600 p-4 rounded-3xl mb-4"><Icon name="trophy" size={32} /></div>
+                                    <h3 className="font-black text-xl mb-1">Total Khatam: {khatamCount}x</h3>
+                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Barakallahfikum</p>
+                                    <button onClick={() => {setProgress({}); setKhatamCount(p => p + 1); setViewMode('surah'); scrollToTop();}} className="w-full mt-6 bg-amber-500 text-white font-black py-4 rounded-2xl shadow-xl">CATAT KHATAM & RESET</button>
+                                </div>
+                                <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-100 space-y-4">
+                                    <div className="flex justify-between items-center py-2 border-b border-slate-50"><span className="text-xs font-bold text-slate-500">Versi</span><span className="text-xs font-black">2.5.0-PWA</span></div>
+                                    <div className="flex justify-between items-center py-2 border-b border-slate-50"><span className="text-xs font-bold text-slate-500">Dev</span><span className="text-xs font-black">Arief x Gemini</span></div>
+                                </div>
+                            </div>
+                        )}
+                    </main>
+
+                    {showScrollTop && (
+                        <button onClick={scrollToTop} className="fixed bottom-10 right-6 bg-emerald-600 text-white p-4 rounded-2xl shadow-2xl z-50 animate-in slide-in-from-bottom-4">
+                            <Icon name="arrow-up" size={24} />
+                        </button>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
