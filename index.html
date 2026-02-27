@@ -2,16 +2,20 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
+    <!-- Tambahan viewport-fit=cover agar aplikasi memenuhi layar sampai ke area notch iOS -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Jurnal Quran - Arief</title>
     
     <!-- PWA Tags -->
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#059669">
+    
+    <!-- Meta khusus iOS agar terasa seperti aplikasi asli -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="JurnalQuran">
     
+    <!-- Link Ikon untuk Mobile (Wajib untuk iOS) -->
     <link rel="apple-touch-icon" href="/icon.png">
 
     <!-- Libraries -->
@@ -19,6 +23,12 @@
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
     <script src="https://cdn.tailwindcss.com"></script>
+
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
 
     <style>
         @keyframes bounce-subtle {
@@ -29,6 +39,7 @@
         .animate-spin-slow { animation: spin 10s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
+        /* Optimasi iOS: Safe Area Insets */
         :root {
             --safe-top: env(safe-area-inset-top);
             --safe-bottom: env(safe-area-inset-bottom);
@@ -38,21 +49,34 @@
             overscroll-behavior-y: none; 
             -webkit-tap-highlight-color: transparent; 
             user-select: none; 
-            background-color: #f8fafc;
             width: 100%;
             height: 100%;
             overflow-y: auto;
             -webkit-overflow-scrolling: touch;
         }
 
-        header { padding-top: calc(1.5rem + var(--safe-top)); }
-        nav.bottom-nav { padding-bottom: var(--safe-bottom); height: auto !important; min-height: 5rem; }
+        header { 
+            padding-top: calc(1.5rem + var(--safe-top)); 
+        }
+
+        nav.bottom-nav { 
+            padding-bottom: var(--safe-bottom); 
+            height: auto !important; 
+            min-height: 5rem; 
+        }
+
         input { user-select: auto; }
         ::-webkit-scrollbar { display: none; }
-        input[type="number"], input[type="text"] { font-size: 16px !important; }
+        
+        /* Mencegah zoom otomatis pada input iOS saat fokus */
+        input[type="number"], input[type="text"] { 
+            font-size: 16px !important; 
+        }
+        
+        .dark body { background-color: #0f172a; }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
     <div id="root"></div>
 
     <script type="text/babel">
@@ -203,7 +227,12 @@
                 circle: <circle cx="12" cy="12" r="10" />,
                 trophy: <path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z" />,
                 "arrow-up": <path d="m5 12 7-7 7 7M12 19V5" />,
-                search: <path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM21 21l-4.35-4.35" />
+                search: <path d="M11 19a8 8 0 1 0 0-16 8 8 0 0 0 0 16ZM21 21l-4.35-4.35" />,
+                moon: <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z" />,
+                sun: <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />,
+                download: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />,
+                upload: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />,
+                trash: <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6" />
             };
             return (
                 <svg
@@ -288,18 +317,29 @@
           return fallback;
         };
 
+        // --- MAIN APP ---
         function App() {
             const [viewMode, setViewMode] = useState('surah');
             const [searchTerm, setSearchTerm] = useState("");
             const [showScrollTop, setShowScrollTop] = useState(false);
+            const [isDark, setIsDark] = useState(() => loadLocal('quran-dark', false));
+            
+            // Progress State
             const [progress, setProgress] = useState(() => loadLocal('quran-progress', {}));
             const [lastRead, setLastRead] = useState(() => loadLocal('quran-last-read', null));
             const [streak, setStreak] = useState(() => parseInt(loadLocal('quran-streak', 0)));
             const [lastActiveDate, setLastActiveDate] = useState(() => loadLocal('quran-last-date', null));
             const [khatamCount, setKhatamCount] = useState(() => parseInt(loadLocal('quran-khatam', 0)));
+            
+            // Target State
             const [targetJuz, setTargetJuz] = useState(() => loadLocal('quran-target-juz', null));
             const [dailyStartVerses, setDailyStartVerses] = useState(() => parseInt(loadLocal('quran-daily-start', 0)));
             const [targetDate, setTargetDate] = useState(() => loadLocal('quran-target-date', new Date().toLocaleDateString('en-CA')));
+
+            useEffect(() => {
+                document.documentElement.classList.toggle('dark', isDark);
+                localStorage.setItem('quran-dark', isDark);
+            }, [isDark]);
 
             useEffect(() => {
                 localStorage.setItem('quran-progress', JSON.stringify(progress));
@@ -405,6 +445,39 @@
                 setLastRead(segments[segments.length - 1].s);
             };
 
+            // --- Backup & Restore Logic ---
+            const exportData = () => {
+                const data = {
+                    progress, lastRead, streak, lastActiveDate, khatamCount, targetJuz, dailyStartVerses, targetDate, isDark
+                };
+                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `jurnal-quran-arief-${new Date().toISOString().split('T')[0]}.json`;
+                a.click();
+            };
+
+            const importData = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        if (confirm("Ganti data saat ini dengan data cadangan?")) {
+                            if(data.progress) setProgress(data.progress);
+                            if(data.lastRead) setLastRead(data.lastRead);
+                            if(data.streak) setStreak(data.streak);
+                            if(data.khatamCount) setKhatamCount(data.khatamCount);
+                            if(data.isDark !== undefined) setIsDark(data.isDark);
+                            alert("Data berhasil dipulihkan!");
+                        }
+                    } catch (err) { alert("File tidak valid."); }
+                };
+                reader.readAsText(file);
+            };
+
             const filteredSurahs = SURAH_DATA.filter(s => 
                 s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                 s.number.toString() === searchTerm
@@ -413,15 +486,18 @@
             const filteredJuz = JUZ_LIST.filter(j => j.number.toString().includes(searchTerm));
 
             return (
-                <div className="pb-32">
-                    <header className="bg-emerald-600 text-white pb-14 px-5 rounded-b-[3rem] shadow-xl relative overflow-hidden">
+                <div className="pb-32 dark:text-slate-100">
+                    <header className="bg-emerald-600 dark:bg-emerald-900 text-white pb-14 px-5 rounded-b-[3rem] shadow-xl relative overflow-hidden transition-colors">
                         <div className="relative z-10">
                             <div className="flex justify-between items-center mb-6">
                                 <div>
                                     <h1 className="text-2xl font-black tracking-tight">Jurnal Quran</h1>
                                     <p className="text-emerald-100 text-[11px] font-bold uppercase tracking-widest opacity-90">Progress Baca Quran</p>
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex gap-2 items-center">
+                                    <button onClick={() => setIsDark(!isDark)} className="p-2 bg-white/10 rounded-xl mr-1">
+                                        <Icon name={isDark ? "sun" : "moon"} size={18} />
+                                    </button>
                                     {streak > 0 && <div className="bg-white/20 px-3 py-1.5 rounded-full text-[15px] font-black tabular-nums">🔥 {streak}d</div>}
                                     {khatamCount > 0 && <div className="bg-white/20 px-3 py-1.5 rounded-full text-[10px] font-black tabular-nums">🏆 {khatamCount}x</div>}
                                 </div>
@@ -444,16 +520,16 @@
 
                     <main className="px-5 -mt-8 relative z-10 space-y-6">
                         {/* Target Section */}
-                        <section className="bg-white rounded-[2rem] shadow-xl p-6 border border-slate-100 active:scale-[0.98] transition-transform">
+                        <section className="bg-white dark:bg-slate-900 rounded-[2rem] shadow-xl p-6 border border-slate-100 dark:border-slate-800 transition-colors">
                            <div className="flex items-center justify-between mb-4">
-                              <span className="text-emerald-600 font-black text-[11px] uppercase tracking-widest flex items-center gap-2">
+                              <span className="text-emerald-600 dark:text-emerald-400 font-black text-[11px] uppercase tracking-widest flex items-center gap-2">
                                 <Icon name="target" size={16} /> Target Hari Ini
                               </span>
-                              {targetJuz && <button onClick={() => setTargetJuz(null)} className="text-[10px] font-black text-slate-400 border border-slate-100 px-3 py-1 rounded-full">GANTI</button>}
+                              {targetJuz && <button onClick={() => setTargetJuz(null)} className="text-[10px] font-black text-slate-400 dark:text-slate-500 border border-slate-100 dark:border-slate-800 px-3 py-1 rounded-full">GANTI</button>}
                            </div>
                            {!targetJuz ? (
                                 <div className="relative">
-                                    <select className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 text-sm font-black appearance-none outline-none focus:border-emerald-500 transition-colors"
+                                    <select className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl p-4 text-sm font-black appearance-none outline-none focus:border-emerald-500 transition-colors dark:text-slate-200"
                                         onChange={(e) => { setTargetJuz(e.target.value); setDailyStartVerses(currentTotalVerses); }}
                                         defaultValue=""
                                     >
@@ -466,15 +542,15 @@
                            ) : (
                                 <div className="animate-in fade-in slide-in-from-right-4">
                                     <div className="flex justify-between items-end mb-2">
-                                        <span className="text-xs font-black uppercase tracking-tight text-slate-600">{targetStats.targetLabel}</span>
-                                        <span className="text-emerald-600 font-black text-2xl tabular-nums">{targetStats.percentage}%</span>
+                                        <span className="text-xs font-black uppercase tracking-tight text-slate-600 dark:text-slate-400">{targetStats.targetLabel}</span>
+                                        <span className="text-emerald-600 dark:text-emerald-400 font-black text-2xl tabular-nums">{targetStats.percentage}%</span>
                                     </div>
-                                    <div className="w-full bg-slate-100 rounded-full h-4 overflow-hidden mb-3 border border-slate-200 shadow-inner">
+                                    <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-4 overflow-hidden mb-3 border border-slate-200 dark:border-slate-700 shadow-inner">
                                         <div className="bg-emerald-500 h-full rounded-full transition-all duration-700 shadow-[0_0_10px_rgba(16,185,129,0.3)]" style={{ width: `${targetStats.percentage}%` }}></div>
                                     </div>
-                                    <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest tabular-nums">
+                                    <div className="flex justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest tabular-nums">
                                         <span>{targetStats.versesReadToday} / {targetStats.versesToReadToday} Ayat</span>
-                                        <span className="text-emerald-500">Ayo Lanjutkan!</span>
+                                        <span className="text-emerald-500">Semangat Istiqomah!</span>
                                     </div>
                                 </div>
                            )}
@@ -513,15 +589,15 @@
 
                         {/* Search & Tabs */}
                         <div className="sticky top-4 z-40 space-y-3">
-                            <div className="bg-white/80 backdrop-blur-xl rounded-[1.5rem] shadow-xl p-1.5 flex gap-1 border border-white">
-                                <button onClick={() => {setViewMode('surah'); scrollToTop();}} className={`flex-1 py-3.5 rounded-xl text-[10px] font-black transition-all ${viewMode === 'surah' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50'}`}>SURAH</button>
-                                <button onClick={() => {setViewMode('juz'); scrollToTop();}} className={`flex-1 py-3.5 rounded-xl text-[10px] font-black transition-all ${viewMode === 'juz' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50'}`}>JUZ</button>
-                                <button onClick={() => {setViewMode('settings'); scrollToTop();}} className={`flex-1 py-3.5 rounded-xl text-[10px] font-black transition-all ${viewMode === 'settings' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50'}`}>MENU</button>
+                            <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[1.5rem] shadow-xl p-1.5 flex gap-1 border border-white dark:border-slate-800">
+                                <button onClick={() => {setViewMode('surah'); scrollToTop();}} className={`flex-1 py-3.5 rounded-xl text-[10px] font-black transition-all ${viewMode === 'surah' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>SURAH</button>
+                                <button onClick={() => {setViewMode('juz'); scrollToTop();}} className={`flex-1 py-3.5 rounded-xl text-[10px] font-black transition-all ${viewMode === 'juz' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>JUZ</button>
+                                <button onClick={() => {setViewMode('settings'); scrollToTop();}} className={`flex-1 py-3.5 rounded-xl text-[10px] font-black transition-all ${viewMode === 'settings' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>MENU</button>
                             </div>
                             {viewMode !== 'settings' && (
-                                <div className="bg-white/90 backdrop-blur-2xl rounded-[1.2rem] shadow-lg p-4 border border-slate-100 flex items-center gap-3">
-                                    <Icon name="search" size={18} className="text-slate-300" strokeWidth={3} />
-                                    <input type="text" placeholder="Cari surah atau nomor..." className="w-full bg-transparent outline-none font-black text-sm text-slate-800 placeholder:text-slate-300" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                                <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[1.2rem] shadow-lg p-4 border border-slate-100 dark:border-slate-800 flex items-center gap-3">
+                                    <Icon name="search" size={18} className="text-slate-300 dark:text-slate-600" strokeWidth={3} />
+                                    <input type="text" placeholder="Cari surah atau nomor..." className="w-full bg-transparent outline-none font-black text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-300" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
                                 </div>
                             )}
                         </div>
@@ -531,27 +607,27 @@
                             const cur = progress[surah.number] || 0;
                             const comp = cur === surah.verses;
                             return (
-                                <div key={surah.number} id={`surah-${surah.number}`} className={`bg-white rounded-[2.5rem] p-6 border-2 transition-all duration-300 ${comp ? 'border-emerald-500 bg-emerald-50/20' : 'border-slate-100'}`}>
+                                <div key={surah.number} id={`surah-${surah.number}`} className={`bg-white dark:bg-slate-900 rounded-[2.5rem] p-6 border-2 transition-all duration-300 ${comp ? 'border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/20' : 'border-slate-100 dark:border-slate-800'}`}>
                                     <div className="flex justify-between items-start mb-6">
                                         <div className="flex items-center gap-4">
-                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner ${comp ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{surah.number}</div>
+                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center font-black text-xl shadow-inner ${comp ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>{surah.number}</div>
                                             <div>
                                                 <h3 className="font-black text-lg tracking-tight">{surah.name}</h3>
-                                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest tabular-nums">{surah.verses} Ayat • Juz {getJuzForVerse(surah.number, cur)}</p>
+                                                <p className="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest tabular-nums">{surah.verses} Ayat • Juz {getJuzForVerse(surah.number, cur)}</p>
                                             </div>
                                         </div>
-                                        <button onClick={() => toggleComplete(surah.number)} className={`transition-all active:scale-75 ${comp ? 'text-emerald-500 scale-110' : 'text-slate-200'}`}>
+                                        <button onClick={() => toggleComplete(surah.number)} className={`transition-all active:scale-75 ${comp ? 'text-emerald-500' : 'text-slate-200 dark:text-slate-700'}`}>
                                             <Icon name={comp ? "check-circle" : "circle"} size={36} strokeWidth={comp ? 0 : 1.5} className={comp ? "fill-current" : ""} />
                                         </button>
                                     </div>
-                                    <div className="bg-slate-50 p-5 rounded-3xl border border-slate-100">
-                                        <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 tabular-nums"><span>Progress</span><span>{Math.round((cur/surah.verses)*100)}%</span></div>
-                                        <div className="h-4 bg-slate-200 rounded-full overflow-hidden mb-6 border border-white shadow-inner"><div className="bg-emerald-500 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]" style={{ width: `${(cur/surah.verses)*100}%` }}></div></div>
+                                    <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-3xl border border-slate-100 dark:border-slate-800">
+                                        <div className="flex justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 tabular-nums"><span>Progress</span><span>{Math.round((cur/surah.verses)*100)}%</span></div>
+                                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-6 border border-white dark:border-slate-900 shadow-inner"><div className="bg-emerald-500 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]" style={{ width: `${(cur/surah.verses)*100}%` }}></div></div>
                                         <div className="flex items-center gap-3">
-                                            <button onClick={() => updateVerse(surah.number, cur - 1)} className="w-16 h-16 bg-white border-2 border-slate-100 rounded-2xl font-black text-3xl text-slate-300 active:bg-slate-100 active:scale-90 transition-all select-none shadow-sm">-</button>
+                                            <button onClick={() => updateVerse(surah.number, cur - 1)} className="w-16 h-16 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl font-black text-3xl text-slate-300 dark:text-slate-600 active:bg-slate-100 dark:active:bg-slate-700 active:scale-90 transition-all select-none shadow-sm">-</button>
                                             <div className="flex-1 relative">
-                                                <input type="number" inputMode="numeric" className="w-full text-center font-black text-2xl bg-white border-2 border-slate-100 rounded-2xl py-4 outline-none focus:border-emerald-500 transition-colors tabular-nums" value={cur === 0 ? '' : cur} placeholder="0" onChange={e => updateVerse(surah.number, parseInt(e.target.value) || 0)} />
-                                                <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 text-[9px] font-black text-slate-400 uppercase bg-white px-3 tracking-widest rounded-full border border-slate-100 shadow-sm">Ayat</span>
+                                                <input type="number" inputMode="numeric" className="w-full text-center font-black text-2xl bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl py-4 outline-none focus:border-emerald-500 transition-colors tabular-nums dark:text-slate-200" value={cur === 0 ? '' : cur} placeholder="0" onChange={e => updateVerse(surah.number, parseInt(e.target.value) || 0)} />
+                                                <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase bg-white dark:bg-slate-800 px-3 tracking-widest rounded-full border border-slate-100 dark:border-slate-700 shadow-sm">Ayat</span>
                                             </div>
                                             <button onClick={() => updateVerse(surah.number, cur + 1)} className="w-16 h-16 bg-emerald-600 text-white rounded-2xl font-black text-3xl active:bg-emerald-700 active:scale-90 transition-all select-none shadow-lg shadow-emerald-200">+</button>
                                         </div>
@@ -563,29 +639,40 @@
                         {viewMode === 'juz' && filteredJuz.map(juz => {
                             const comp = isJuzComplete(juz.number, progress);
                             return (
-                                <div key={juz.number} onClick={() => toggleJuz(juz.number)} className={`bg-white rounded-[2rem] p-6 border-2 flex items-center justify-between active:scale-[0.98] transition-all ${comp ? 'border-emerald-500 bg-emerald-50/20' : 'border-slate-100'}`}>
+                                <div key={juz.number} onClick={() => toggleJuz(juz.number)} className={`bg-white dark:bg-slate-900 rounded-[2rem] p-6 border-2 flex items-center justify-between active:scale-[0.98] transition-all ${comp ? 'border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/20' : 'border-slate-100 dark:border-slate-800'}`}>
                                     <div className="flex items-center gap-5">
-                                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl shadow-inner ${comp ? 'bg-emerald-100 text-emerald-700' : 'bg-slate-100 text-slate-500'}`}>{juz.number}</div>
-                                        <div><h3 className="font-black text-xl tracking-tight">Juz {juz.number}</h3><p className="text-[10px] font-black text-slate-400 uppercase tracking-tighter mt-1">{juz.start}</p></div>
+                                        <div className={`w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl shadow-inner ${comp ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>{juz.number}</div>
+                                        <div><h3 className="font-black text-xl tracking-tight">Juz {juz.number}</h3><p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter mt-1">{juz.start}</p></div>
                                     </div>
-                                    <div className={`transition-all ${comp ? 'text-emerald-500 scale-110' : 'text-slate-100'}`}><Icon name={comp ? "check-circle" : "circle"} size={40} className={comp ? "fill-current" : ""} /></div>
+                                    <div className={`transition-all ${comp ? 'text-emerald-500 scale-110' : 'text-slate-100 dark:text-slate-700'}`}><Icon name={comp ? "check-circle" : "circle"} size={40} className={comp ? "fill-current" : ""} /></div>
                                 </div>
                             );
                         })}
 
                         {viewMode === 'settings' && (
                             <div className="space-y-6 pb-12 animate-in slide-in-from-bottom-8">
-                                <div className="bg-white rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 text-center">
-                                    <div className="inline-flex bg-emerald-100 text-emerald-600 p-6 rounded-[2rem] mb-6 shadow-inner animate-bounce-subtle"><Icon name="trophy" size={40} /></div>
+                                <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 dark:border-slate-800 text-center">
+                                    <div className="inline-flex bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-200 p-6 rounded-[2rem] mb-6 shadow-inner animate-bounce-subtle"><Icon name="trophy" size={40} /></div>
                                     <h3 className="font-black text-2xl mb-1 tracking-tight tabular-nums">Total Khatam: {khatamCount}x</h3>
-                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.2em] mb-8">Barakallahfikum</p>
-                                    <button onClick={() => { if(window.confirm("Mulai progres baru?")) { setProgress({}); setKhatamCount(p => p + 1); setViewMode('surah'); scrollToTop(); } }} className="w-full bg-amber-500 text-white font-black py-5 rounded-[1.5rem] shadow-xl shadow-amber-100 active:scale-95 transition-transform uppercase tracking-widest text-xs">CATAT KHATAM & RESET</button>
+                                    <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.2em] mb-8">Barakallahfikum!</p>
+                                    
+                                    <div className="grid grid-cols-2 gap-3 mt-4">
+                                        <button onClick={exportData} className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 shadow-sm"><Icon name="download" size={14} /> Cadangkan</button>
+                                        <label className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 shadow-sm cursor-pointer">
+                                            <Icon name="upload" size={14} /> Pulihkan
+                                            <input type="file" accept=".json" onChange={importData} className="hidden" />
+                                        </label>
+                                    </div>
+                                    
+                                    <button onClick={() => { if(window.confirm("Hapus seluruh progres dan mulai dari nol?")) { setProgress({}); setKhatamCount(0); setStreak(0); setLastRead(null); alert("Data dibersihkan."); } }} className="w-full mt-6 bg-red-50 dark:bg-red-950/30 text-red-500 font-black py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2"><Icon name="trash" size={14} /> Hapus Seluruh Data</button>
                                 </div>
-                                <div className="bg-white rounded-[2rem] p-6 shadow-xl border border-slate-100 space-y-4">
-                                    <div className="flex justify-between items-center py-2 border-b border-slate-50"><span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Versi</span><span className="text-xs font-black text-slate-800 bg-slate-50 px-3 py-1 rounded-full uppercase tracking-widest">2.7.0-Stable</span></div>
-                                    <div className="flex justify-between items-center py-2"><span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Penyimpanan</span><span className="text-xs font-black text-emerald-600 uppercase tracking-widest">Lokal (Offline)</span></div>
+                                
+                                <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-xl border border-slate-100 dark:border-slate-800 space-y-4">
+                                    <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800"><span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Tampilan</span><button onClick={() => setIsDark(!isDark)} className="text-xs font-black text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 px-4 py-1.5 rounded-full uppercase tracking-widest flex items-center gap-2"><Icon name={isDark ? "sun" : "moon"} size={14} /> {isDark ? "Mode Terang" : "Mode Gelap"}</button></div>
+                                    <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800"><span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Versi</span><span className="text-xs font-black text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-full uppercase tracking-widest">2.8.0-Pro</span></div>
+                                    <div className="flex justify-between items-center py-2"><span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Penyimpanan</span><span className="text-xs font-black text-emerald-600 uppercase tracking-widest">Lokal + Backup</span></div>
                                 </div>
-                                <p className="text-center text-[9px] font-black text-slate-300 uppercase tracking-[0.3em] mt-10">Vibe Coding by Arief</p>
+                                <p className="text-center text-[9px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-[0.3em] mt-10">Jurnal Quran by Arief</p>
                             </div>
                         )}
                     </main>
@@ -596,17 +683,17 @@
                         </button>
                     )}
 
-                    <nav className="bottom-nav fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-3xl border-t border-slate-50 flex items-center justify-around px-8 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)]">
-                        <button onClick={() => {setViewMode('surah'); scrollToTop();}} className={`flex flex-col items-center gap-1.5 transition-all ${viewMode === 'surah' ? 'text-emerald-600 scale-110' : 'text-slate-300 hover:text-slate-400'}`}>
-                            <div className={`p-1.5 rounded-xl ${viewMode === 'surah' ? 'bg-emerald-50' : ''}`}><Icon name="list" size={22} strokeWidth={viewMode === 'surah' ? 3 : 2} /></div>
+                    <nav className="bottom-nav fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl border-t border-slate-50 dark:border-slate-800 flex items-center justify-around px-8 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] transition-colors">
+                        <button onClick={() => {setViewMode('surah'); scrollToTop();}} className={`flex flex-col items-center gap-1.5 transition-all ${viewMode === 'surah' ? 'text-emerald-600 scale-110' : 'text-slate-300 dark:text-slate-600'}`}>
+                            <div className={`p-1.5 rounded-xl ${viewMode === 'surah' ? 'bg-emerald-50 dark:bg-emerald-900/30' : ''}`}><Icon name="list" size={22} strokeWidth={viewMode === 'surah' ? 3 : 2} /></div>
                             <span className="text-[9px] font-black uppercase tracking-widest">Surah</span>
                         </button>
-                        <button onClick={() => {setViewMode('juz'); scrollToTop();}} className={`flex flex-col items-center gap-1.5 transition-all ${viewMode === 'juz' ? 'text-emerald-600 scale-110' : 'text-slate-300 hover:text-slate-400'}`}>
-                            <div className={`p-1.5 rounded-xl ${viewMode === 'juz' ? 'bg-emerald-50' : ''}`}><Icon name="layers" size={22} strokeWidth={viewMode === 'juz' ? 3 : 2} /></div>
+                        <button onClick={() => {setViewMode('juz'); scrollToTop();}} className={`flex flex-col items-center gap-1.5 transition-all ${viewMode === 'juz' ? 'text-emerald-600 scale-110' : 'text-slate-300 dark:text-slate-600'}`}>
+                            <div className={`p-1.5 rounded-xl ${viewMode === 'juz' ? 'bg-emerald-50 dark:bg-emerald-900/30' : ''}`}><Icon name="layers" size={22} strokeWidth={viewMode === 'juz' ? 3 : 2} /></div>
                             <span className="text-[9px] font-black uppercase tracking-widest">Juz</span>
                         </button>
-                        <button onClick={() => {setViewMode('settings'); scrollToTop();}} className={`flex flex-col items-center gap-1.5 transition-all ${viewMode === 'settings' ? 'text-emerald-600 scale-110' : 'text-slate-300 hover:text-slate-400'}`}>
-                            <div className={`p-1.5 rounded-xl ${viewMode === 'settings' ? 'bg-emerald-50' : ''}`}><Icon name="settings" size={22} strokeWidth={viewMode === 'settings' ? 3 : 2} /></div>
+                        <button onClick={() => {setViewMode('settings'); scrollToTop();}} className={`flex flex-col items-center gap-1.5 transition-all ${viewMode === 'settings' ? 'text-emerald-600 scale-110' : 'text-slate-300 dark:text-slate-600'}`}>
+                            <div className={`p-1.5 rounded-xl ${viewMode === 'settings' ? 'bg-emerald-50 dark:bg-emerald-900/30' : ''}`}><Icon name="settings" size={22} strokeWidth={viewMode === 'settings' ? 3 : 2} /></div>
                             <span className="text-[9px] font-black uppercase tracking-widest">Menu</span>
                         </button>
                     </nav>
