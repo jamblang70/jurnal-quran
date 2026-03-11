@@ -2,7 +2,6 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <!-- Tambahan viewport-fit=cover agar aplikasi memenuhi layar sampai ke area notch iOS -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Jurnal Quran - Arief</title>
     
@@ -10,12 +9,10 @@
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#059669">
     
-    <!-- Meta khusus iOS agar terasa seperti aplikasi asli -->
+    <!-- iOS PWA -->
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="JurnalQuran">
-    
-    <!-- Link Ikon untuk Mobile (Wajib untuk iOS) -->
     <link rel="apple-touch-icon" href="/icon.png">
 
     <!-- Libraries -->
@@ -25,9 +22,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
 
     <script>
-        tailwind.config = {
-            darkMode: 'class',
-        }
+        tailwind.config = { darkMode: 'class' }
     </script>
 
     <style>
@@ -39,7 +34,6 @@
         .animate-spin-slow { animation: spin 10s linear infinite; }
         @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         
-        /* Optimasi iOS: Safe Area Insets */
         :root {
             --safe-top: env(safe-area-inset-top);
             --safe-bottom: env(safe-area-inset-bottom);
@@ -68,7 +62,6 @@
         input { user-select: auto; }
         ::-webkit-scrollbar { display: none; }
         
-        /* Mencegah zoom otomatis pada input iOS saat fokus */
         input[type="number"], input[type="text"] { 
             font-size: 16px !important; 
         }
@@ -80,7 +73,7 @@
     <div id="root"></div>
 
     <script type="text/babel">
-        const { useState, useMemo, useEffect } = React;
+        const { useState, useMemo, useEffect, useRef, useCallback } = React;
         
         // --- DATA MASTER ---
         const SURAH_DATA = [
@@ -213,7 +206,7 @@
           { juz: 28, s: 58, v: 1 }, { juz: 29, s: 67, v: 1 }, { juz: 30, s: 78, v: 1 }
         ];
 
-        // --- STABLE ICON COMPONENT (INLINE SVG) ---
+        // --- STABLE ICON COMPONENT ---
         const Icon = ({ name, size = 24, strokeWidth = 2, className = "" }) => {
             const icons = {
                 target: <path d="M12 12m-9 0a9 9 0 1 0 18 0a9 9 0 1 0 -18 0M12 12m-5 0a5 5 0 1 0 10 0a5 5 0 1 0 -10 0M12 12m-1 0a1 1 0 1 0 2 0a1 1 0 1 0 -2 0" />,
@@ -232,25 +225,18 @@
                 sun: <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41" />,
                 download: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3" />,
                 upload: <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />,
-                trash: <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6" />
+                trash: <path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2M10 11v6M14 11v6" />,
+                star: <path d="M12 2l3.09 6.26L22 9.27l-5 4.87L18.18 21 12 17.77 5.82 21 7 14.14 2 9.27l6.91-1.01L12 2z" />
             };
             return (
-                <svg
-                    width={size}
-                    height={size}
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth={strokeWidth}
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className={className}
-                >
+                <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    strokeWidth={strokeWidth} strokeLinecap="round" strokeLinejoin="round" className={className}>
                     {icons[name] || null}
                 </svg>
             );
         };
 
+        // --- HELPER FUNCTIONS ---
         const getAbsoluteVerseCount = (surahNum, verseNum) => {
           let total = 0;
           for (let i = 1; i < surahNum; i++) {
@@ -307,15 +293,45 @@
           return { number: num, start: `${surahName} ayat ${start.v}` };
         });
 
+        // --- SAFE localStorage HELPERS ---
         const loadLocal = (key, fallback) => {
-          if (typeof window !== 'undefined') {
+          try {
             const saved = localStorage.getItem(key);
-            if (saved) {
-              try { return JSON.parse(saved); } catch (e) { return saved; }
+            if (saved !== null) {
+              return JSON.parse(saved);
             }
+          } catch (e) {
+            console.warn(`Failed to load ${key} from localStorage:`, e);
           }
           return fallback;
         };
+
+        const saveLocal = (key, value) => {
+          try {
+            localStorage.setItem(key, JSON.stringify(value));
+          } catch (e) {
+            console.warn(`Failed to save ${key} to localStorage:`, e);
+          }
+        };
+
+        const removeLocal = (key) => {
+          try { localStorage.removeItem(key); } catch (e) {}
+        };
+
+        // --- KHATAM CELEBRATION MODAL ---
+        const KhatamModal = ({ count, onClose }) => (
+            <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm" onClick={onClose}>
+                <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-10 mx-6 text-center shadow-2xl border border-emerald-200 dark:border-emerald-800 animate-in zoom-in-50" onClick={e => e.stopPropagation()}>
+                    <div className="text-7xl mb-4 animate-bounce-subtle">🏆</div>
+                    <h2 className="font-black text-3xl text-emerald-600 dark:text-emerald-400 mb-2">Alhamdulillah!</h2>
+                    <p className="font-black text-slate-700 dark:text-slate-300 text-lg mb-1">Khatam ke-{count}!</p>
+                    <p className="text-slate-400 dark:text-slate-500 text-xs font-bold uppercase tracking-widest mb-8">Barakallahfikum, semoga berkah</p>
+                    <button onClick={onClose} className="bg-emerald-600 text-white font-black px-10 py-4 rounded-2xl text-sm uppercase tracking-widest shadow-lg active:scale-95 transition-transform">
+                        Aamiin 🤲
+                    </button>
+                </div>
+            </div>
+        );
 
         // --- MAIN APP ---
         function App() {
@@ -323,67 +339,88 @@
             const [searchTerm, setSearchTerm] = useState("");
             const [showScrollTop, setShowScrollTop] = useState(false);
             const [isDark, setIsDark] = useState(() => loadLocal('quran-dark', false));
-            
+            const [showKhatamModal, setShowKhatamModal] = useState(false);
+
             // Progress State
             const [progress, setProgress] = useState(() => loadLocal('quran-progress', {}));
             const [lastRead, setLastRead] = useState(() => loadLocal('quran-last-read', null));
-            const [streak, setStreak] = useState(() => parseInt(loadLocal('quran-streak', 0)));
+            const [streak, setStreak] = useState(() => parseInt(loadLocal('quran-streak', 0)) || 0);
             const [lastActiveDate, setLastActiveDate] = useState(() => loadLocal('quran-last-date', null));
-            const [khatamCount, setKhatamCount] = useState(() => parseInt(loadLocal('quran-khatam', 0)));
-            
+            const [khatamCount, setKhatamCount] = useState(() => parseInt(loadLocal('quran-khatam', 0)) || 0);
+
             // Target State
             const [targetJuz, setTargetJuz] = useState(() => loadLocal('quran-target-juz', null));
-            const [dailyStartVerses, setDailyStartVerses] = useState(() => parseInt(loadLocal('quran-daily-start', 0)));
+            // FIX #1: dailyStartVerses menggunakan ref untuk akses nilai terkini
+            const [dailyStartVerses, setDailyStartVerses] = useState(() => parseInt(loadLocal('quran-daily-start', 0)) || 0);
             const [targetDate, setTargetDate] = useState(() => loadLocal('quran-target-date', new Date().toLocaleDateString('en-CA')));
 
+            // Ref untuk akses nilai terkini tanpa stale closure
+            const dailyStartRef = useRef(dailyStartVerses);
+            const targetDateRef = useRef(targetDate);
+            const lastActiveDateRef = useRef(lastActiveDate);
+
+            useEffect(() => { dailyStartRef.current = dailyStartVerses; }, [dailyStartVerses]);
+            useEffect(() => { targetDateRef.current = targetDate; }, [targetDate]);
+            useEffect(() => { lastActiveDateRef.current = lastActiveDate; }, [lastActiveDate]);
+
+            // Dark mode effect
             useEffect(() => {
                 document.documentElement.classList.toggle('dark', isDark);
-                localStorage.setItem('quran-dark', isDark);
+                saveLocal('quran-dark', isDark);
             }, [isDark]);
 
+            // Persist all state
+            useEffect(() => { saveLocal('quran-progress', progress); }, [progress]);
+            useEffect(() => { if (lastRead !== null) saveLocal('quran-last-read', lastRead); }, [lastRead]);
+            useEffect(() => { saveLocal('quran-streak', streak); }, [streak]);
+            useEffect(() => { if (lastActiveDate) saveLocal('quran-last-date', lastActiveDate); }, [lastActiveDate]);
+            useEffect(() => { saveLocal('quran-khatam', khatamCount); }, [khatamCount]);
             useEffect(() => {
-                localStorage.setItem('quran-progress', JSON.stringify(progress));
-                if (lastRead) localStorage.setItem('quran-last-read', lastRead);
-                localStorage.setItem('quran-streak', streak);
-                if (lastActiveDate) localStorage.setItem('quran-last-date', lastActiveDate);
-                localStorage.setItem('quran-khatam', khatamCount);
-                if (targetJuz) localStorage.setItem('quran-target-juz', targetJuz); 
-                else localStorage.removeItem('quran-target-juz');
-                localStorage.setItem('quran-daily-start', dailyStartVerses);
-                localStorage.setItem('quran-target-date', targetDate);
-            }, [progress, lastRead, streak, lastActiveDate, khatamCount, targetJuz, dailyStartVerses, targetDate]);
+                if (targetJuz) saveLocal('quran-target-juz', targetJuz);
+                else removeLocal('quran-target-juz');
+            }, [targetJuz]);
+            useEffect(() => { saveLocal('quran-daily-start', dailyStartVerses); }, [dailyStartVerses]);
+            useEffect(() => { saveLocal('quran-target-date', targetDate); }, [targetDate]);
 
+            // Scroll top button
             useEffect(() => {
                 const handleScroll = () => setShowScrollTop(window.scrollY > 300);
-                window.addEventListener('scroll', handleScroll);
+                window.addEventListener('scroll', handleScroll, { passive: true });
                 return () => window.removeEventListener('scroll', handleScroll);
             }, []);
 
             const scrollToTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
-
-            const recordActivity = () => {
-                const today = new Date().toLocaleDateString('en-CA'); 
-                if (lastActiveDate !== today) {
-                    if (lastActiveDate) {
-                        const lastDate = new Date(lastActiveDate);
-                        const currentDate = new Date(today);
-                        const diffDays = Math.ceil(Math.abs(currentDate - lastDate) / (1000 * 60 * 60 * 24)); 
-                        if (diffDays === 1) setStreak(prev => prev + 1); 
-                        else setStreak(1); 
-                    } else { setStreak(1); }
-                    setLastActiveDate(today);
-                }
-                if (targetDate !== today) {
-                    setTargetDate(today);
-                    setDailyStartVerses(currentTotalVerses);
-                }
-            };
 
             const currentTotalVerses = useMemo(() => {
                 let total = 0;
                 SURAH_DATA.forEach(s => { total += progress[s.number] || 0; });
                 return total;
             }, [progress]);
+
+            // FIX #2: recordActivity menggunakan ref + menerima newTotal sebagai parameter
+            // agar tidak bergantung pada stale closure currentTotalVerses
+            const recordActivity = useCallback((newTotal) => {
+                const today = new Date().toLocaleDateString('en-CA');
+                const storedDate = lastActiveDateRef.current;
+
+                if (storedDate !== today) {
+                    if (storedDate) {
+                        const lastDate = new Date(storedDate);
+                        const currentDate = new Date(today);
+                        const diffDays = Math.ceil(Math.abs(currentDate - lastDate) / (1000 * 60 * 60 * 24));
+                        setStreak(prev => diffDays === 1 ? prev + 1 : 1);
+                    } else {
+                        setStreak(1);
+                    }
+                    setLastActiveDate(today);
+                }
+
+                // FIX: Reset daily start jika hari baru, gunakan newTotal yang akurat
+                if (targetDateRef.current !== today) {
+                    setTargetDate(today);
+                    setDailyStartVerses(newTotal);
+                }
+            }, []);
 
             const targetStats = useMemo(() => {
                 if (!targetJuz) return null;
@@ -399,65 +436,99 @@
                     targetLabel = `Awal Juz ${targetJuz}`;
                 }
                 const versesReadToday = Math.max(0, currentTotalVerses - dailyStartVerses);
-                const versesToReadToday = Math.max(1, targetTotalVerses - dailyStartVerses); 
+                const versesToReadToday = Math.max(1, targetTotalVerses - dailyStartVerses);
                 const isReached = currentTotalVerses >= targetTotalVerses;
-                let percentage = isReached ? 100 : Math.round((versesReadToday / versesToReadToday) * 100);
+                const percentage = isReached ? 100 : Math.min(100, Math.round((versesReadToday / versesToReadToday) * 100));
                 return { targetLabel, versesReadToday, versesToReadToday, percentage, isReached };
             }, [targetJuz, currentTotalVerses, dailyStartVerses]);
 
             const stats = useMemo(() => {
                 let surahsCompleted = 0;
                 SURAH_DATA.forEach(surah => {
-                  if ((progress[surah.number] || 0) === surah.verses) surahsCompleted += 1;
+                    if ((progress[surah.number] || 0) === surah.verses) surahsCompleted++;
                 });
                 let juzCompleted = 0;
                 for (let i = 1; i <= 30; i++) {
-                  if (isJuzComplete(i, progress)) juzCompleted += 1;
+                    if (isJuzComplete(i, progress)) juzCompleted++;
                 }
                 const percentage = Math.round((currentTotalVerses / 6236) * 100);
-                return { percentage, surahsCompleted, juzCompleted, isKhatam: currentTotalVerses === 6236 };
+                return { percentage, surahsCompleted, juzCompleted, isKhatam: currentTotalVerses >= 6236 };
             }, [progress, currentTotalVerses]);
 
-            const updateVerse = (surahNumber, verse) => {
-                recordActivity();
+            // FIX #3: Auto-detect khatam dan increment khatamCount
+            const prevTotalRef = useRef(currentTotalVerses);
+            useEffect(() => {
+                const prev = prevTotalRef.current;
+                const curr = currentTotalVerses;
+                prevTotalRef.current = curr;
+                // Jika sebelumnya belum 6236 dan sekarang sudah, berarti baru khatam
+                if (prev < 6236 && curr >= 6236) {
+                    setKhatamCount(c => c + 1);
+                    setShowKhatamModal(true);
+                }
+            }, [currentTotalVerses]);
+
+            const updateVerse = useCallback((surahNumber, verse) => {
                 const surah = SURAH_DATA.find(s => s.number === surahNumber);
-                let newVerse = Math.max(0, Math.min(verse, surah.verses));
+                const newVerse = Math.max(0, Math.min(verse, surah.verses));
+
+                // Hitung newTotal secara langsung sebelum setState agar recordActivity akurat
+                let newTotal = 0;
+                SURAH_DATA.forEach(s => {
+                    newTotal += s.number === surahNumber ? newVerse : (progress[s.number] || 0);
+                });
+
+                recordActivity(newTotal);
                 setProgress(prev => ({ ...prev, [surahNumber]: newVerse }));
                 setLastRead(surahNumber);
-            };
+            }, [progress, recordActivity]);
 
-            const toggleComplete = (surahNumber) => {
+            const toggleComplete = useCallback((surahNumber) => {
                 const surah = SURAH_DATA.find(s => s.number === surahNumber);
-                updateVerse(surah.number, (progress[surah.number] || 0) === surah.verses ? 0 : surah.verses);
-            };
+                const currentVerse = progress[surah.number] || 0;
+                updateVerse(surah.number, currentVerse === surah.verses ? 0 : surah.verses);
+            }, [progress, updateVerse]);
 
-            const toggleJuz = (juzNumber) => {
-                recordActivity();
+            // FIX #4: toggleJuz — Math.max(0, ...) untuk cegah nilai negatif
+            const toggleJuz = useCallback((juzNumber) => {
                 const segments = getJuzSegments(juzNumber);
                 const completed = isJuzComplete(juzNumber, progress);
-                setProgress(prev => {
-                    const next = { ...prev };
-                    segments.forEach(seg => {
-                        next[seg.s] = completed ? Math.min(next[seg.s] || 0, seg.start - 1) : Math.max(next[seg.s] || 0, seg.end);
-                    });
-                    return next;
-                });
-                setLastRead(segments[segments.length - 1].s);
-            };
 
-            // --- Backup & Restore Logic ---
+                // Hitung newTotal secara langsung
+                const nextProgress = { ...progress };
+                segments.forEach(seg => {
+                    if (completed) {
+                        // Reset ke sebelum segmen ini mulai, minimal 0
+                        nextProgress[seg.s] = Math.max(0, seg.start - 1);
+                    } else {
+                        nextProgress[seg.s] = Math.max(nextProgress[seg.s] || 0, seg.end);
+                    }
+                });
+
+                let newTotal = 0;
+                SURAH_DATA.forEach(s => { newTotal += nextProgress[s.number] || 0; });
+
+                recordActivity(newTotal);
+                setProgress(nextProgress);
+                setLastRead(segments[segments.length - 1].s);
+            }, [progress, recordActivity]);
+
+            // --- Backup & Restore ---
             const exportData = () => {
                 const data = {
-                    progress, lastRead, streak, lastActiveDate, khatamCount, targetJuz, dailyStartVerses, targetDate, isDark
+                    progress, lastRead, streak, lastActiveDate, khatamCount,
+                    targetJuz, dailyStartVerses, targetDate, isDark
                 };
-                const blob = new Blob([JSON.stringify(data)], { type: 'application/json' });
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
                 const url = URL.createObjectURL(blob);
                 const a = document.createElement('a');
                 a.href = url;
                 a.download = `jurnal-quran-arief-${new Date().toISOString().split('T')[0]}.json`;
                 a.click();
+                URL.revokeObjectURL(url);
             };
 
+            // FIX #5: importData — restore SEMUA field termasuk yang sebelumnya diabaikan
             const importData = (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
@@ -465,28 +536,53 @@
                 reader.onload = (event) => {
                     try {
                         const data = JSON.parse(event.target.result);
-                        if (confirm("Ganti data saat ini dengan data cadangan?")) {
-                            if(data.progress) setProgress(data.progress);
-                            if(data.lastRead) setLastRead(data.lastRead);
-                            if(data.streak) setStreak(data.streak);
-                            if(data.khatamCount) setKhatamCount(data.khatamCount);
-                            if(data.isDark !== undefined) setIsDark(data.isDark);
-                            alert("Data berhasil dipulihkan!");
+                        if (window.confirm("Ganti data saat ini dengan data cadangan?")) {
+                            if (data.progress !== undefined) setProgress(data.progress);
+                            if (data.lastRead !== undefined) setLastRead(data.lastRead);
+                            if (data.streak !== undefined) setStreak(parseInt(data.streak) || 0);
+                            if (data.lastActiveDate !== undefined) setLastActiveDate(data.lastActiveDate);
+                            if (data.khatamCount !== undefined) setKhatamCount(parseInt(data.khatamCount) || 0);
+                            if (data.targetJuz !== undefined) setTargetJuz(data.targetJuz);
+                            if (data.dailyStartVerses !== undefined) setDailyStartVerses(parseInt(data.dailyStartVerses) || 0);
+                            if (data.targetDate !== undefined) setTargetDate(data.targetDate);
+                            if (data.isDark !== undefined) setIsDark(data.isDark);
+                            alert("✅ Data berhasil dipulihkan!");
                         }
-                    } catch (err) { alert("File tidak valid."); }
+                    } catch (err) {
+                        alert("❌ File tidak valid atau rusak.");
+                    }
                 };
                 reader.readAsText(file);
+                // Reset input agar bisa import file yang sama lagi
+                e.target.value = '';
             };
 
-            const filteredSurahs = SURAH_DATA.filter(s => 
-                s.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                s.number.toString() === searchTerm
-            );
+            const filteredSurahs = useMemo(() =>
+                SURAH_DATA.filter(s =>
+                    s.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    s.number.toString() === searchTerm
+                ), [searchTerm]);
 
-            const filteredJuz = JUZ_LIST.filter(j => j.number.toString().includes(searchTerm));
+            const filteredJuz = useMemo(() =>
+                JUZ_LIST.filter(j => j.number.toString().includes(searchTerm)),
+                [searchTerm]);
 
             return (
                 <div className="pb-32 dark:text-slate-100">
+                    {showKhatamModal && (
+                        <KhatamModal
+                            count={khatamCount}
+                            onClose={() => {
+                                setShowKhatamModal(false);
+                                // Reset progress untuk putaran berikutnya
+                                if (window.confirm("Mulai putaran baru? Progress akan direset.")) {
+                                    setProgress({});
+                                    setLastRead(null);
+                                }
+                            }}
+                        />
+                    )}
+
                     <header className="bg-emerald-600 dark:bg-emerald-900 text-white pb-14 px-5 rounded-b-[3rem] shadow-xl relative overflow-hidden transition-colors">
                         <div className="relative z-10">
                             <div className="flex justify-between items-center mb-6">
@@ -530,7 +626,12 @@
                            {!targetJuz ? (
                                 <div className="relative">
                                     <select className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl p-4 text-sm font-black appearance-none outline-none focus:border-emerald-500 transition-colors dark:text-slate-200"
-                                        onChange={(e) => { setTargetJuz(e.target.value); setDailyStartVerses(currentTotalVerses); }}
+                                        onChange={(e) => {
+                                            setTargetJuz(e.target.value);
+                                            // FIX: gunakan currentTotalVerses yang sudah akurat saat ini
+                                            setDailyStartVerses(currentTotalVerses);
+                                            setTargetDate(new Date().toLocaleDateString('en-CA'));
+                                        }}
                                         defaultValue=""
                                     >
                                         <option value="" disabled>Mau sampai mana hari ini?</option>
@@ -540,31 +641,32 @@
                                     <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-emerald-500"><Icon name="chevron-down" size={18} /></div>
                                 </div>
                            ) : (
-                                <div className="animate-in fade-in slide-in-from-right-4">
+                                <div>
                                     <div className="flex justify-between items-end mb-2">
-                                        <span className="text-xs font-black uppercase tracking-tight text-slate-600 dark:text-slate-400">{targetStats.targetLabel}</span>
-                                        <span className="text-emerald-600 dark:text-emerald-400 font-black text-2xl tabular-nums">{targetStats.percentage}%</span>
+                                        <span className="text-xs font-black uppercase tracking-tight text-slate-600 dark:text-slate-400">{targetStats?.targetLabel}</span>
+                                        <span className="text-emerald-600 dark:text-emerald-400 font-black text-2xl tabular-nums">{targetStats?.percentage ?? 0}%</span>
                                     </div>
                                     <div className="w-full bg-slate-100 dark:bg-slate-800 rounded-full h-4 overflow-hidden mb-3 border border-slate-200 dark:border-slate-700 shadow-inner">
-                                        <div className="bg-emerald-500 h-full rounded-full transition-all duration-700 shadow-[0_0_10px_rgba(16,185,129,0.3)]" style={{ width: `${targetStats.percentage}%` }}></div>
+                                        <div className="bg-emerald-500 h-full rounded-full transition-all duration-700 shadow-[0_0_10px_rgba(16,185,129,0.3)]" style={{ width: `${targetStats?.percentage ?? 0}%` }}></div>
                                     </div>
                                     <div className="flex justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest tabular-nums">
-                                        <span>{targetStats.versesReadToday} / {targetStats.versesToReadToday} Ayat</span>
-                                        <span className="text-emerald-500">Semangat Istiqomah!</span>
+                                        <span>{targetStats?.versesReadToday ?? 0} / {targetStats?.versesToReadToday ?? 0} Ayat</span>
+                                        <span className="text-emerald-500">{targetStats?.isReached ? "✅ Target Tercapai!" : "Semangat Istiqomah!"}</span>
                                     </div>
                                 </div>
                            )}
                         </section>
 
-                        {/* Fitur Terakhir Dibaca */}
+                        {/* Terakhir Dibaca */}
                         {lastRead && viewMode === 'surah' && !searchTerm && (
-                            <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 p-6 rounded-[2.5rem] shadow-2xl border border-emerald-400/30 text-white animate-in slide-in-from-top-4">
+                            <div className="bg-gradient-to-br from-emerald-500 to-emerald-700 p-6 rounded-[2.5rem] shadow-2xl border border-emerald-400/30 text-white">
                                 <div className="flex items-center gap-2 mb-4">
                                     <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md"><Icon name="refresh-cw" size={14} className="animate-spin-slow" /></div>
                                     <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-80">Terakhir Dibaca</span>
                                 </div>
                                 {(() => {
                                     const s = SURAH_DATA.find(x => x.number === lastRead);
+                                    if (!s) return null;
                                     const current = progress[s.number] || 0;
                                     return (
                                         <div className="flex justify-between items-center">
@@ -572,17 +674,17 @@
                                                 <h3 className="font-black text-2xl leading-tight tracking-tight">{s.name}</h3>
                                                 <p className="text-emerald-100 text-[11px] font-black mt-1 tabular-nums bg-black/10 inline-block px-3 py-1 rounded-full uppercase tracking-widest">Ayat {current} / {s.verses}</p>
                                             </div>
-                                            <button 
+                                            <button
                                                 onClick={() => {
                                                     const el = document.getElementById(`surah-${s.number}`);
-                                                    if(el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' });
                                                 }}
                                                 className="bg-white text-emerald-700 p-4 rounded-2xl shadow-xl active:scale-90 transition-transform"
                                             >
                                                 <Icon name="chevron-right" size={24} strokeWidth={3} />
                                             </button>
                                         </div>
-                                    )
+                                    );
                                 })()}
                             </div>
                         )}
@@ -590,19 +692,20 @@
                         {/* Search & Tabs */}
                         <div className="sticky top-4 z-40 space-y-3">
                             <div className="bg-white/80 dark:bg-slate-900/80 backdrop-blur-xl rounded-[1.5rem] shadow-xl p-1.5 flex gap-1 border border-white dark:border-slate-800">
-                                <button onClick={() => {setViewMode('surah'); scrollToTop();}} className={`flex-1 py-3.5 rounded-xl text-[10px] font-black transition-all ${viewMode === 'surah' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>SURAH</button>
-                                <button onClick={() => {setViewMode('juz'); scrollToTop();}} className={`flex-1 py-3.5 rounded-xl text-[10px] font-black transition-all ${viewMode === 'juz' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>JUZ</button>
-                                <button onClick={() => {setViewMode('settings'); scrollToTop();}} className={`flex-1 py-3.5 rounded-xl text-[10px] font-black transition-all ${viewMode === 'settings' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>MENU</button>
+                                <button onClick={() => { setViewMode('surah'); scrollToTop(); }} className={`flex-1 py-3.5 rounded-xl text-[10px] font-black transition-all ${viewMode === 'surah' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>SURAH</button>
+                                <button onClick={() => { setViewMode('juz'); scrollToTop(); }} className={`flex-1 py-3.5 rounded-xl text-[10px] font-black transition-all ${viewMode === 'juz' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>JUZ</button>
+                                <button onClick={() => { setViewMode('settings'); scrollToTop(); }} className={`flex-1 py-3.5 rounded-xl text-[10px] font-black transition-all ${viewMode === 'settings' ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800'}`}>MENU</button>
                             </div>
                             {viewMode !== 'settings' && (
                                 <div className="bg-white/90 dark:bg-slate-900/90 backdrop-blur-2xl rounded-[1.2rem] shadow-lg p-4 border border-slate-100 dark:border-slate-800 flex items-center gap-3">
                                     <Icon name="search" size={18} className="text-slate-300 dark:text-slate-600" strokeWidth={3} />
                                     <input type="text" placeholder="Cari surah atau nomor..." className="w-full bg-transparent outline-none font-black text-sm text-slate-800 dark:text-slate-200 placeholder:text-slate-300" value={searchTerm} onChange={e => setSearchTerm(e.target.value)} />
+                                    {searchTerm && <button onClick={() => setSearchTerm('')} className="text-slate-300 font-black text-lg leading-none">×</button>}
                                 </div>
                             )}
                         </div>
 
-                        {/* List Area */}
+                        {/* Surah List */}
                         {viewMode === 'surah' && filteredSurahs.map(surah => {
                             const cur = progress[surah.number] || 0;
                             const comp = cur === surah.verses;
@@ -621,12 +724,24 @@
                                         </button>
                                     </div>
                                     <div className="bg-slate-50 dark:bg-slate-800/50 p-5 rounded-3xl border border-slate-100 dark:border-slate-800">
-                                        <div className="flex justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 tabular-nums"><span>Progress</span><span>{Math.round((cur/surah.verses)*100)}%</span></div>
-                                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-6 border border-white dark:border-slate-900 shadow-inner"><div className="bg-emerald-500 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]" style={{ width: `${(cur/surah.verses)*100}%` }}></div></div>
+                                        <div className="flex justify-between text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-3 tabular-nums">
+                                            <span>Progress</span>
+                                            <span>{Math.round((cur / surah.verses) * 100)}%</span>
+                                        </div>
+                                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-6 border border-white dark:border-slate-900 shadow-inner">
+                                            <div className="bg-emerald-500 h-full rounded-full transition-all duration-500 shadow-[0_0_10px_rgba(16,185,129,0.3)]" style={{ width: `${(cur / surah.verses) * 100}%` }}></div>
+                                        </div>
                                         <div className="flex items-center gap-3">
                                             <button onClick={() => updateVerse(surah.number, cur - 1)} className="w-16 h-16 bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl font-black text-3xl text-slate-300 dark:text-slate-600 active:bg-slate-100 dark:active:bg-slate-700 active:scale-90 transition-all select-none shadow-sm">-</button>
                                             <div className="flex-1 relative">
-                                                <input type="number" inputMode="numeric" className="w-full text-center font-black text-2xl bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl py-4 outline-none focus:border-emerald-500 transition-colors tabular-nums dark:text-slate-200" value={cur === 0 ? '' : cur} placeholder="0" onChange={e => updateVerse(surah.number, parseInt(e.target.value) || 0)} />
+                                                <input
+                                                    type="number"
+                                                    inputMode="numeric"
+                                                    className="w-full text-center font-black text-2xl bg-white dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl py-4 outline-none focus:border-emerald-500 transition-colors tabular-nums dark:text-slate-200"
+                                                    value={cur === 0 ? '' : cur}
+                                                    placeholder="0"
+                                                    onChange={e => updateVerse(surah.number, parseInt(e.target.value) || 0)}
+                                                />
                                                 <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase bg-white dark:bg-slate-800 px-3 tracking-widest rounded-full border border-slate-100 dark:border-slate-700 shadow-sm">Ayat</span>
                                             </div>
                                             <button onClick={() => updateVerse(surah.number, cur + 1)} className="w-16 h-16 bg-emerald-600 text-white rounded-2xl font-black text-3xl active:bg-emerald-700 active:scale-90 transition-all select-none shadow-lg shadow-emerald-200">+</button>
@@ -636,63 +751,105 @@
                             );
                         })}
 
+                        {/* Juz List */}
                         {viewMode === 'juz' && filteredJuz.map(juz => {
                             const comp = isJuzComplete(juz.number, progress);
                             return (
                                 <div key={juz.number} onClick={() => toggleJuz(juz.number)} className={`bg-white dark:bg-slate-900 rounded-[2rem] p-6 border-2 flex items-center justify-between active:scale-[0.98] transition-all ${comp ? 'border-emerald-500 bg-emerald-50/20 dark:bg-emerald-950/20' : 'border-slate-100 dark:border-slate-800'}`}>
                                     <div className="flex items-center gap-5">
                                         <div className={`w-16 h-16 rounded-2xl flex items-center justify-center font-black text-2xl shadow-inner ${comp ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900 dark:text-emerald-200' : 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'}`}>{juz.number}</div>
-                                        <div><h3 className="font-black text-xl tracking-tight">Juz {juz.number}</h3><p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter mt-1">{juz.start}</p></div>
+                                        <div>
+                                            <h3 className="font-black text-xl tracking-tight">Juz {juz.number}</h3>
+                                            <p className="text-[10px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-tighter mt-1">{juz.start}</p>
+                                        </div>
                                     </div>
-                                    <div className={`transition-all ${comp ? 'text-emerald-500 scale-110' : 'text-slate-100 dark:text-slate-700'}`}><Icon name={comp ? "check-circle" : "circle"} size={40} className={comp ? "fill-current" : ""} /></div>
+                                    <div className={`transition-all ${comp ? 'text-emerald-500 scale-110' : 'text-slate-100 dark:text-slate-700'}`}>
+                                        <Icon name={comp ? "check-circle" : "circle"} size={40} className={comp ? "fill-current" : ""} />
+                                    </div>
                                 </div>
                             );
                         })}
 
+                        {/* Settings */}
                         {viewMode === 'settings' && (
-                            <div className="space-y-6 pb-12 animate-in slide-in-from-bottom-8">
+                            <div className="space-y-6 pb-12">
                                 <div className="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 shadow-2xl border border-slate-100 dark:border-slate-800 text-center">
-                                    <div className="inline-flex bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-200 p-6 rounded-[2rem] mb-6 shadow-inner animate-bounce-subtle"><Icon name="trophy" size={40} /></div>
+                                    <div className="inline-flex bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-200 p-6 rounded-[2rem] mb-6 shadow-inner animate-bounce-subtle">
+                                        <Icon name="trophy" size={40} />
+                                    </div>
                                     <h3 className="font-black text-2xl mb-1 tracking-tight tabular-nums">Total Khatam: {khatamCount}x</h3>
                                     <p className="text-xs text-slate-400 font-bold uppercase tracking-[0.2em] mb-8">Barakallahfikum!</p>
-                                    
+
                                     <div className="grid grid-cols-2 gap-3 mt-4">
-                                        <button onClick={exportData} className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 shadow-sm"><Icon name="download" size={14} /> Cadangkan</button>
-                                        <label className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 shadow-sm cursor-pointer">
+                                        <button onClick={exportData} className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 shadow-sm active:scale-95 transition-transform">
+                                            <Icon name="download" size={14} /> Cadangkan
+                                        </button>
+                                        <label className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-800 p-4 rounded-2xl text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-300 shadow-sm cursor-pointer active:scale-95 transition-transform">
                                             <Icon name="upload" size={14} /> Pulihkan
                                             <input type="file" accept=".json" onChange={importData} className="hidden" />
                                         </label>
                                     </div>
-                                    
-                                    <button onClick={() => { if(window.confirm("Hapus seluruh progres dan mulai dari nol?")) { setProgress({}); setKhatamCount(0); setStreak(0); setLastRead(null); alert("Data dibersihkan."); } }} className="w-full mt-6 bg-red-50 dark:bg-red-950/30 text-red-500 font-black py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2"><Icon name="trash" size={14} /> Hapus Seluruh Data</button>
+
+                                    <button
+                                        onClick={() => {
+                                            if (window.confirm("Hapus seluruh progres dan mulai dari nol?")) {
+                                                setProgress({});
+                                                setKhatamCount(0);
+                                                setStreak(0);
+                                                setLastRead(null);
+                                                setLastActiveDate(null);
+                                                setTargetJuz(null);
+                                                setDailyStartVerses(0);
+                                                alert("✅ Data dibersihkan.");
+                                            }
+                                        }}
+                                        className="w-full mt-6 bg-red-50 dark:bg-red-950/30 text-red-500 font-black py-4 rounded-2xl text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 active:scale-95 transition-transform"
+                                    >
+                                        <Icon name="trash" size={14} /> Hapus Seluruh Data
+                                    </button>
                                 </div>
-                                
+
                                 <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-6 shadow-xl border border-slate-100 dark:border-slate-800 space-y-4">
-                                    <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800"><span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Tampilan</span><button onClick={() => setIsDark(!isDark)} className="text-xs font-black text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 px-4 py-1.5 rounded-full uppercase tracking-widest flex items-center gap-2"><Icon name={isDark ? "sun" : "moon"} size={14} /> {isDark ? "Mode Terang" : "Mode Gelap"}</button></div>
-                                    <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800"><span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Versi</span><span className="text-xs font-black text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-full uppercase tracking-widest">2.8.0-Pro</span></div>
-                                    <div className="flex justify-between items-center py-2"><span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Penyimpanan</span><span className="text-xs font-black text-emerald-600 uppercase tracking-widest">Lokal + Backup</span></div>
+                                    <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800">
+                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Tampilan</span>
+                                        <button onClick={() => setIsDark(!isDark)} className="text-xs font-black text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 px-4 py-1.5 rounded-full uppercase tracking-widest flex items-center gap-2">
+                                            <Icon name={isDark ? "sun" : "moon"} size={14} /> {isDark ? "Mode Terang" : "Mode Gelap"}
+                                        </button>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800">
+                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Versi</span>
+                                        <span className="text-xs font-black text-slate-800 dark:text-slate-200 bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-full uppercase tracking-widest">2.9.0-Fix</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800">
+                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Penyimpanan</span>
+                                        <span className="text-xs font-black text-emerald-600 uppercase tracking-widest">Lokal + Backup</span>
+                                    </div>
+                                    <div className="flex justify-between items-center py-2">
+                                        <span className="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Total Ayat Dibaca</span>
+                                        <span className="text-xs font-black text-emerald-600 uppercase tracking-widest tabular-nums">{currentTotalVerses} / 6236</span>
+                                    </div>
                                 </div>
-                                <p className="text-center text-[9px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-[0.3em] mt-10">Jurnal Quran by Arief</p>
+                                <p className="text-center text-[9px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-[0.3em] mt-10">Jurnal Quran by Arief • v2.9.0</p>
                             </div>
                         )}
                     </main>
 
                     {showScrollTop && (
-                        <button onClick={scrollToTop} className="fixed bottom-28 right-6 bg-emerald-600 text-white p-5 rounded-[1.5rem] shadow-2xl z-50 animate-in zoom-in-50 active:scale-75 transition-all">
+                        <button onClick={scrollToTop} className="fixed bottom-28 right-6 bg-emerald-600 text-white p-5 rounded-[1.5rem] shadow-2xl z-50 active:scale-75 transition-all">
                             <Icon name="arrow-up" size={24} strokeWidth={3} />
                         </button>
                     )}
 
                     <nav className="bottom-nav fixed bottom-0 left-0 right-0 bg-white/80 dark:bg-slate-900/80 backdrop-blur-3xl border-t border-slate-50 dark:border-slate-800 flex items-center justify-around px-8 z-50 shadow-[0_-10px_40px_rgba(0,0,0,0.05)] transition-colors">
-                        <button onClick={() => {setViewMode('surah'); scrollToTop();}} className={`flex flex-col items-center gap-1.5 transition-all ${viewMode === 'surah' ? 'text-emerald-600 scale-110' : 'text-slate-300 dark:text-slate-600'}`}>
+                        <button onClick={() => { setViewMode('surah'); scrollToTop(); }} className={`flex flex-col items-center gap-1.5 transition-all ${viewMode === 'surah' ? 'text-emerald-600 scale-110' : 'text-slate-300 dark:text-slate-600'}`}>
                             <div className={`p-1.5 rounded-xl ${viewMode === 'surah' ? 'bg-emerald-50 dark:bg-emerald-900/30' : ''}`}><Icon name="list" size={22} strokeWidth={viewMode === 'surah' ? 3 : 2} /></div>
                             <span className="text-[9px] font-black uppercase tracking-widest">Surah</span>
                         </button>
-                        <button onClick={() => {setViewMode('juz'); scrollToTop();}} className={`flex flex-col items-center gap-1.5 transition-all ${viewMode === 'juz' ? 'text-emerald-600 scale-110' : 'text-slate-300 dark:text-slate-600'}`}>
+                        <button onClick={() => { setViewMode('juz'); scrollToTop(); }} className={`flex flex-col items-center gap-1.5 transition-all ${viewMode === 'juz' ? 'text-emerald-600 scale-110' : 'text-slate-300 dark:text-slate-600'}`}>
                             <div className={`p-1.5 rounded-xl ${viewMode === 'juz' ? 'bg-emerald-50 dark:bg-emerald-900/30' : ''}`}><Icon name="layers" size={22} strokeWidth={viewMode === 'juz' ? 3 : 2} /></div>
                             <span className="text-[9px] font-black uppercase tracking-widest">Juz</span>
                         </button>
-                        <button onClick={() => {setViewMode('settings'); scrollToTop();}} className={`flex flex-col items-center gap-1.5 transition-all ${viewMode === 'settings' ? 'text-emerald-600 scale-110' : 'text-slate-300 dark:text-slate-600'}`}>
+                        <button onClick={() => { setViewMode('settings'); scrollToTop(); }} className={`flex flex-col items-center gap-1.5 transition-all ${viewMode === 'settings' ? 'text-emerald-600 scale-110' : 'text-slate-300 dark:text-slate-600'}`}>
                             <div className={`p-1.5 rounded-xl ${viewMode === 'settings' ? 'bg-emerald-50 dark:bg-emerald-900/30' : ''}`}><Icon name="settings" size={22} strokeWidth={viewMode === 'settings' ? 3 : 2} /></div>
                             <span className="text-[9px] font-black uppercase tracking-widest">Menu</span>
                         </button>
