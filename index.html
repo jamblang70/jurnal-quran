@@ -290,16 +290,22 @@ function removeLocal(key) {
     try { localStorage.removeItem(key); } catch (e) {}
 }
 
-// Parse "06:10 AM" -> {h:6, m:10}
+// Parse "06:10 AM", "18:10", or "18:10 (WIB)" -> {h,m}
 function parseTime12(timeStr) {
     if (!timeStr) return null;
-    const parts = timeStr.trim().split(' ');
-    const timeParts = parts[0].split(':');
-    let h = parseInt(timeParts[0]);
-    const m = parseInt(timeParts[1]);
-    const period = parts[1];
+
+    const cleaned = String(timeStr).trim();
+    const match = cleaned.match(/^(\d{1,2}):(\d{2})(?:\s*(AM|PM))?/i);
+    if (!match) return null;
+
+    let h = parseInt(match[1], 10);
+    const m = parseInt(match[2], 10);
+    const period = match[3] ? match[3].toUpperCase() : null;
+
     if (period === 'PM' && h !== 12) h += 12;
     if (period === 'AM' && h === 12) h = 0;
+    if (h > 23 || m > 59 || Number.isNaN(h) || Number.isNaN(m)) return null;
+
     return { h, m };
 }
 
@@ -446,8 +452,9 @@ function PrayerView() {
                 const tz = data.data.meta && data.data.meta.timezone;
                 if (tz) {
                     const parts = tz.split('/');
-                    const cityFromTZ = parts[1] ? parts[1].replace(/_/g, ' ') : name;
+                    const cityFromTZ = parts[1] ? parts[1].replace(/_/g, ' ') : city;
                     setCity(cityFromTZ);
+                    setCityInput(cityFromTZ);
                 }
             } else {
                 setError('Tidak bisa mengambil jadwal dari lokasi ini.');
@@ -1308,6 +1315,12 @@ function App() {
 }
 
 ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+
+if ('serviceWorker' in navigator) {
+    window.addEventListener('load', function() {
+        navigator.serviceWorker.register('/sw.js').catch(function() {});
+    });
+}
 
 </script>
 </body>
