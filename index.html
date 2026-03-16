@@ -689,11 +689,42 @@ function PrayerView() {
 }
 
 // ═══════════════════════════════════════════════
+// HAID BANNER
+// ═══════════════════════════════════════════════
+
+function HaidBanner({ isHaidToday, onToggle }) {
+    return (
+        <div className={'rounded-[2rem] p-4 border-2 flex items-center justify-between transition-all ' + (isHaidToday ? 'bg-pink-50 dark:bg-pink-950/20 border-pink-200 dark:border-pink-900' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800')}>
+            <div className="flex items-center gap-3">
+                <div className={'w-10 h-10 rounded-xl flex items-center justify-center text-xl ' + (isHaidToday ? 'bg-pink-100 dark:bg-pink-900/50' : 'bg-slate-100 dark:bg-slate-800')}>
+                    🌸
+                </div>
+                <div>
+                    <div className={'font-black text-sm ' + (isHaidToday ? 'text-pink-600 dark:text-pink-400' : 'text-slate-600 dark:text-slate-400')}>
+                        {isHaidToday ? 'Mode Haid Aktif' : 'Tandai Hari Haid'}
+                    </div>
+                    <div className={'text-[9px] font-black uppercase tracking-widest ' + (isHaidToday ? 'text-pink-400' : 'text-slate-400')}>
+                        {isHaidToday ? 'Streak tetap terjaga • Target dijeda' : 'Streak & target tidak terpengaruh'}
+                    </div>
+                </div>
+            </div>
+            <button
+                onClick={onToggle}
+                className={'px-4 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all active:scale-90 ' + (isHaidToday ? 'bg-pink-100 dark:bg-pink-900/50 text-pink-600 dark:text-pink-400' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400')}
+            >
+                {isHaidToday ? 'Nonaktifkan' : 'Aktifkan'}
+            </button>
+        </div>
+    );
+}
+
+// ═══════════════════════════════════════════════
 // WEEKLY STATS
 // ═══════════════════════════════════════════════
 
-function WeeklyStats() {
+function WeeklyStats({ haidLog, onToggleHaid }) {
     const dailyLog = loadLocal('q-daily-log', {});
+    const haid = haidLog || {};
 
     // Build last 7 days array
     const days = [];
@@ -703,12 +734,15 @@ function WeeklyStats() {
         const key = d.toLocaleDateString('en-CA');
         const label = d.toLocaleDateString('id-ID', { weekday: 'short' }).substring(0, 3);
         const count = dailyLog[key] || 0;
-        days.push({ key, label, count });
+        const isHaid = haid[key] === true;
+        const isToday = i === 0;
+        days.push({ key, label, count, isHaid, isToday });
     }
 
     const maxCount = Math.max(...days.map(function(d) { return d.count; }), 1);
+    const activeDays = days.filter(function(d) { return d.count > 0 && !d.isHaid; }).length;
+    const haidDays = days.filter(function(d) { return d.isHaid; }).length;
     const totalWeek = days.reduce(function(a, d) { return a + d.count; }, 0);
-    const activeDays = days.filter(function(d) { return d.count > 0; }).length;
     const avgPerDay = activeDays > 0 ? Math.round(totalWeek / activeDays) : 0;
 
     return (
@@ -726,34 +760,73 @@ function WeeklyStats() {
                         <div className="text-[8px] font-black uppercase tracking-widest text-slate-400">Rata-rata</div>
                         <div className="text-sm font-black text-emerald-600 tabular-nums">{avgPerDay}/hr</div>
                     </div>
-                    <div>
-                        <div className="text-[8px] font-black uppercase tracking-widest text-slate-400">Aktif</div>
-                        <div className="text-sm font-black text-emerald-600 tabular-nums">{activeDays}hr</div>
-                    </div>
+                    {haidDays > 0 && (
+                        <div>
+                            <div className="text-[8px] font-black uppercase tracking-widest text-pink-400">Haid</div>
+                            <div className="text-sm font-black text-pink-500 tabular-nums">{haidDays}hr</div>
+                        </div>
+                    )}
                 </div>
             </div>
 
             {/* Bar chart */}
-            <div className="flex items-end gap-1.5" style={{ height: '80px' }}>
+            <div className="flex items-end gap-1.5" style={{ height: '90px' }}>
                 {days.map(function(day) {
-                    const isToday = day.key === new Date().toLocaleDateString('en-CA');
                     const heightPct = maxCount > 0 ? (day.count / maxCount) * 100 : 0;
-                    const minH = day.count > 0 ? 8 : 3;
+                    const minH = day.count > 0 ? 8 : 4;
+
+                    if (day.isHaid) {
+                        return (
+                            <div key={day.key} className="flex-1 flex flex-col items-center justify-end gap-1">
+                                <div className="text-[10px] leading-none">🌸</div>
+                                <div
+                                    className={'w-full rounded-lg border-2 ' + (day.isToday ? 'border-pink-400 bg-pink-100 dark:bg-pink-900/40' : 'border-pink-200 bg-pink-50 dark:bg-pink-900/20')}
+                                    style={{ height: '18px' }}
+                                />
+                                <div className={'text-[8px] font-black uppercase ' + (day.isToday ? 'text-pink-500' : 'text-pink-400')}>
+                                    {day.label}
+                                </div>
+                            </div>
+                        );
+                    }
+
                     return (
-                        <div key={day.key} className="flex-1 flex flex-col items-center justify-end gap-1">
+                        <button
+                            key={day.key}
+                            onClick={function() { onToggleHaid(day.key); }}
+                            className="flex-1 flex flex-col items-center justify-end gap-1 active:opacity-70 transition-opacity"
+                            title={'Tandai ' + day.label + ' sebagai haid'}
+                        >
                             <div className="text-[8px] font-black text-slate-400 dark:text-slate-600 tabular-nums leading-none">
                                 {day.count > 0 ? day.count : ''}
                             </div>
                             <div
-                                className={'rounded-lg transition-all duration-700 w-full ' + (isToday ? 'bg-emerald-500' : day.count > 0 ? 'bg-emerald-200 dark:bg-emerald-800' : 'bg-slate-100 dark:bg-slate-800')}
+                                className={'rounded-lg transition-all duration-700 w-full ' + (day.isToday ? 'bg-emerald-500' : day.count > 0 ? 'bg-emerald-200 dark:bg-emerald-800' : 'bg-slate-100 dark:bg-slate-800')}
                                 style={{ height: Math.max(minH, heightPct * 0.62) + 'px' }}
                             />
-                            <div className={'text-[8px] font-black uppercase ' + (isToday ? 'text-emerald-600' : 'text-slate-400 dark:text-slate-600')}>
+                            <div className={'text-[8px] font-black uppercase ' + (day.isToday ? 'text-emerald-600' : 'text-slate-400 dark:text-slate-600')}>
                                 {day.label}
                             </div>
-                        </div>
+                        </button>
                     );
                 })}
+            </div>
+
+            {/* Legend + hint */}
+            <div className="flex gap-3 mt-3 flex-wrap items-center">
+                <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded bg-emerald-200 dark:bg-emerald-800" />
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Baca</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded bg-pink-100 dark:bg-pink-900/40 border border-pink-200" />
+                    <span className="text-[8px] font-black text-pink-400 uppercase tracking-wider">Haid</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <div className="w-3 h-3 rounded bg-slate-100 dark:bg-slate-800" />
+                    <span className="text-[8px] font-black text-slate-400 uppercase tracking-wider">Kosong</span>
+                </div>
+                <span className="text-[7px] font-black text-slate-300 dark:text-slate-600 ml-auto">Tap bar untuk tandai haid</span>
             </div>
         </div>
     );
@@ -848,26 +921,38 @@ function JuzMap({ progress }) {
 // KHATAM TARGET (by date)
 // ═══════════════════════════════════════════════
 
-function KhatamTarget({ currentTotal }) {
+function KhatamTarget({ currentTotal, haidLog }) {
     const [targetDt, setTargetDt] = useState(function() { return loadLocal('q-khatam-target', ''); });
     const [editing, setEditing] = useState(false);
     const [inputVal, setInputVal] = useState('');
+    const haid = haidLog || {};
 
     useEffect(function() { saveLocal('q-khatam-target', targetDt); }, [targetDt]);
 
     const plan = useMemo(function() {
         if (!targetDt) return null;
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const todayDate = new Date();
+        todayDate.setHours(0, 0, 0, 0);
         const target = new Date(targetDt);
         target.setHours(0, 0, 0, 0);
-        const daysLeft = Math.ceil((target - today) / 86400000);
-        if (daysLeft < 0) return { expired: true, daysLeft: 0, ayatPerDay: 0, remaining: 0, pct: 0 };
+        const totalCalDays = Math.ceil((target - todayDate) / 86400000);
+        if (totalCalDays < 0) return { expired: true };
+
+        // Count active (non-haid) days remaining including today
+        let activeDaysLeft = 0;
+        const cursor = new Date(todayDate);
+        while (cursor <= target) {
+            const k = cursor.toLocaleDateString('en-CA');
+            if (!haid[k]) activeDaysLeft++;
+            cursor.setDate(cursor.getDate() + 1);
+        }
+
         const remaining = Math.max(0, 6236 - currentTotal);
-        const ayatPerDay = daysLeft > 0 ? Math.ceil(remaining / daysLeft) : remaining;
+        const ayatPerDay = activeDaysLeft > 0 ? Math.ceil(remaining / activeDaysLeft) : remaining;
         const pct = Math.round((currentTotal / 6236) * 100);
-        return { expired: false, daysLeft, ayatPerDay, remaining, pct };
-    }, [targetDt, currentTotal]);
+        const haidDaysAhead = totalCalDays + 1 - activeDaysLeft;
+        return { expired: false, totalCalDays, activeDaysLeft, ayatPerDay, remaining, pct, haidDaysAhead };
+    }, [targetDt, currentTotal, haid]);
 
     if (!targetDt && !editing) {
         return (
@@ -954,8 +1039,8 @@ function KhatamTarget({ currentTotal }) {
                             <div className="font-black text-sm text-slate-700 dark:text-slate-200">{targetFormatted}</div>
                         </div>
                         <div className="text-right">
-                            <div className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Sisa hari</div>
-                            <div className="font-black text-2xl text-emerald-600 tabular-nums">{plan.daysLeft}h</div>
+                            <div className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Hari aktif tersisa</div>
+                            <div className="font-black text-2xl text-emerald-600 tabular-nums">{plan.activeDaysLeft}h</div>
                         </div>
                     </div>
 
@@ -985,6 +1070,13 @@ function KhatamTarget({ currentTotal }) {
                             <div className="text-[7px] font-black text-slate-400">ayat</div>
                         </div>
                     </div>
+
+                    {plan.haidDaysAhead > 0 && (
+                        <div className="mt-3 bg-pink-50 dark:bg-pink-950/20 rounded-2xl py-2.5 px-3 flex items-center gap-2">
+                            <span className="text-sm">🌸</span>
+                            <span className="text-[9px] font-black text-pink-500">{plan.haidDaysAhead} hari haid tidak dihitung — target menyesuaikan otomatis</span>
+                        </div>
+                    )}
 
                     {currentTotal >= 6236 && (
                         <div className="mt-3 bg-emerald-50 dark:bg-emerald-950/30 rounded-2xl py-3 text-center">
@@ -1055,6 +1147,8 @@ function App() {
     const [targetJuz, setTargetJuz] = useState(() => loadLocal('q-tjuz', null));
     const [dailyStart, setDailyStart] = useState(() => parseInt(loadLocal('q-dstart', 0)) || 0);
     const [targetDate, setTargetDate] = useState(() => loadLocal('q-tdate', new Date().toLocaleDateString('en-CA')));
+    // Haid mode — key baru, tidak ganggu data lama sama sekali
+    const [haidLog, setHaidLog] = useState(() => loadLocal('q-haid-log', {}));
 
     // Refs for stale-closure-safe access
     const lastActiveDateRef = useRef(lastActiveDate);
@@ -1078,6 +1172,36 @@ function App() {
     useEffect(function() { if (targetJuz) saveLocal('q-tjuz', targetJuz); else removeLocal('q-tjuz'); }, [targetJuz]);
     useEffect(function() { saveLocal('q-dstart', dailyStart); }, [dailyStart]);
     useEffect(function() { saveLocal('q-tdate', targetDate); }, [targetDate]);
+    useEffect(function() { saveLocal('q-haid-log', haidLog); }, [haidLog]);
+
+    // Haid helpers
+    const today = new Date().toLocaleDateString('en-CA');
+    const isHaidToday = haidLog[today] === true;
+
+    function toggleHaidToday() {
+        setHaidLog(function(prev) {
+            const next = Object.assign({}, prev);
+            if (next[today]) {
+                delete next[today];
+            } else {
+                next[today] = true;
+            }
+            return next;
+        });
+    }
+
+    // Toggle haid for a specific past date (for retroactive marking)
+    function toggleHaidDate(dateKey) {
+        setHaidLog(function(prev) {
+            const next = Object.assign({}, prev);
+            if (next[dateKey]) {
+                delete next[dateKey];
+            } else {
+                next[dateKey] = true;
+            }
+            return next;
+        });
+    }
 
     // Scroll listener
     useEffect(function() {
@@ -1100,36 +1224,44 @@ function App() {
 
     // Record daily activity - takes newTotal as param to avoid stale value
     const recordActivity = useCallback(function(newTotal) {
-        const today = new Date().toLocaleDateString('en-CA');
+        const todayKey = new Date().toLocaleDateString('en-CA');
         const stored = lastActiveDateRef.current;
-        if (stored !== today) {
+        if (stored !== todayKey) {
             if (stored) {
-                const diff = Math.ceil(Math.abs(new Date(today) - new Date(stored)) / 86400000);
-                setStreak(function(prev) { return diff === 1 ? prev + 1 : 1; });
+                // Count actual non-haid gap between last active date and today
+                const haidData = loadLocal('q-haid-log', {});
+                let gap = 0;
+                let cursor = new Date(stored);
+                cursor.setDate(cursor.getDate() + 1);
+                const todayDate = new Date(todayKey);
+                while (cursor < todayDate) {
+                    const k = cursor.toLocaleDateString('en-CA');
+                    if (!haidData[k]) gap++;
+                    cursor.setDate(cursor.getDate() + 1);
+                }
+                // gap = jumlah hari non-haid antara lastActive dan hari ini (tidak termasuk hari ini)
+                setStreak(function(prev) { return gap === 0 ? prev + 1 : 1; });
             } else {
                 setStreak(1);
             }
-            setLastActiveDate(today);
+            setLastActiveDate(todayKey);
         }
-        if (targetDateRef.current !== today) {
-            setTargetDate(today);
+        if (targetDateRef.current !== todayKey) {
+            setTargetDate(todayKey);
             setDailyStart(newTotal);
         }
-        // Update daily log (key: q-daily-log, format: {date: ayatCount})
-        // We store total verses at start of day on first call, then delta
+        // Update daily log
         const log = loadLocal('q-daily-log', {});
         const logStart = loadLocal('q-daily-log-start', {});
-        if (!logStart[today]) {
-            // First activity of the day — snapshot currentTotal as start
+        if (!logStart[todayKey]) {
             const snap = Object.assign({}, logStart);
-            snap[today] = currentTotalRef.current;
+            snap[todayKey] = currentTotalRef.current;
             saveLocal('q-daily-log-start', snap);
         }
-        const startVal = logStart[today] !== undefined ? logStart[today] : currentTotalRef.current;
+        const startVal = logStart[todayKey] !== undefined ? logStart[todayKey] : currentTotalRef.current;
         const todayCount = Math.max(0, newTotal - startVal);
         const updatedLog = Object.assign({}, log);
-        updatedLog[today] = todayCount;
-        // Keep only last 30 days to avoid bloat
+        updatedLog[todayKey] = todayCount;
         const keys = Object.keys(updatedLog).sort();
         if (keys.length > 30) { delete updatedLog[keys[0]]; }
         saveLocal('q-daily-log', updatedLog);
@@ -1308,7 +1440,9 @@ function App() {
                                 <Icon name={isDark ? 'sun' : 'moon'} size={18} />
                             </button>
                             {streak > 0 && (
-                                <div className="bg-white/20 px-3 py-1.5 rounded-full text-sm font-black tabular-nums">🔥{streak}d</div>
+                                <div className={'bg-white/20 px-3 py-1.5 rounded-full text-sm font-black tabular-nums ' + (isHaidToday ? 'opacity-70' : '')}>
+                                    {isHaidToday ? '🌸' : '🔥'}{streak}d
+                                </div>
                             )}
                             {khatamCount > 0 && (
                                 <div className="bg-white/20 px-3 py-1.5 rounded-full text-xs font-black">🏆{khatamCount}x</div>
@@ -1413,8 +1547,9 @@ function App() {
                 {/* 3 Fitur Baru — tampil di surah view saja, sebelum list */}
                 {viewMode === 'surah' && !searchTerm && (
                     <div className="space-y-4">
-                        <KhatamTarget currentTotal={currentTotal} />
-                        <WeeklyStats />
+                        <HaidBanner isHaidToday={isHaidToday} onToggle={toggleHaidToday} />
+                        <KhatamTarget currentTotal={currentTotal} haidLog={haidLog} />
+                        <WeeklyStats haidLog={haidLog} onToggleHaid={toggleHaidDate} />
                         <JuzMap progress={progress} />
                     </div>
                 )}
@@ -1581,6 +1716,7 @@ function App() {
                                         removeLocal('q-daily-log');
                                         removeLocal('q-daily-log-start');
                                         removeLocal('q-khatam-target');
+                                        removeLocal('q-haid-log');
                                         alert('Data dibersihkan.');
                                     }
                                 }}
@@ -1603,7 +1739,7 @@ function App() {
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800">
                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Versi</span>
-                                <span className="text-xs font-black bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-full dark:text-slate-200">4.0.0</span>
+                                <span className="text-xs font-black bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-full dark:text-slate-200">5.0.0</span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800">
                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Penyimpanan</span>
@@ -1615,7 +1751,7 @@ function App() {
                             </div>
                         </div>
                         <p className="text-center text-[8px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-widest">
-                            Jurnal Quran by Arief • v4.0.0
+                            Jurnal Quran by Arief • v5.0.0
                         </p>
                     </div>
                 )}
