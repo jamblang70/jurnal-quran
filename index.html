@@ -220,6 +220,64 @@ const PRAYER_NAME = { Fajr:'Subuh', Dhuhr:'Dzuhur', Asr:'Ashar', Maghrib:'Maghri
 const PRAYER_ICON = { Fajr:'🌙', Dhuhr:'☀️', Asr:'🌤️', Maghrib:'🌇', Isha:'🌌' };
 
 // ═══════════════════════════════════════════════
+// MUSHAF MADINAH — halaman pertama setiap surah
+// Sumber: Mushaf Madinah (Utsmani) 604 halaman
+// ═══════════════════════════════════════════════
+
+// SURAH_PAGE[i] = halaman pertama surah ke-(i+1) di mushaf Madinah 604 hlm
+const SURAH_PAGE = [
+    1,2,50,77,106,128,151,177,187,208,
+    221,235,249,255,261,267,282,293,305,312,
+    322,332,342,350,359,367,377,385,396,404,
+    411,415,418,428,434,440,446,453,458,467,
+    477,483,489,496,499,502,507,511,514,518,
+    523,526,531,534,537,541,543,545,549,551,
+    553,554,556,557,558,560,562,564,566,568,
+    570,572,574,575,577,578,580,582,583,585,
+    586,587,587,589,590,591,592,593,594,595,
+    595,596,596,597,597,598,598,599,599,600,
+    600,601,601,602,602,602,603,603,603,604,
+    604,604,604,604
+];
+
+// Halaman terakhir setiap surah = halaman pertama surah berikutnya - 1
+// kecuali surah 114 = halaman 604
+function getSurahPageRange(surahNum) {
+    const startPage = SURAH_PAGE[surahNum - 1];
+    const endPage = surahNum === 114 ? 604 : SURAH_PAGE[surahNum] - 1;
+    return { startPage, endPage, totalPages: endPage - startPage + 1 };
+}
+
+// Konversi total ayat yang sudah dibaca ke estimasi halaman
+// Pendekatan: hitung halaman berdasarkan posisi verse dalam mushaf
+// Setiap surah dipetakan ke halaman mulai dari SURAH_PAGE[n]
+// Distribusi ayat per halaman diasumsikan linear dalam surah
+function versesToPages(progressObj) {
+    let totalReadPages = 0;
+    SURAH_DATA.forEach(function(surah) {
+        const cur = progressObj[surah.number] || 0;
+        if (cur === 0) return;
+        const range = getSurahPageRange(surah.number);
+        const pct = Math.min(cur / surah.verses, 1);
+        totalReadPages += pct * range.totalPages;
+    });
+    return Math.round(totalReadPages);
+}
+
+// Estimasi halaman saat ini untuk surah tertentu pada ayat tertentu
+function verseToPageInSurah(surahNum, verseNum) {
+    const surah = SURAH_DATA.find(function(s) { return s.number === surahNum; });
+    if (!surah || verseNum === 0) return null;
+    const range = getSurahPageRange(surahNum);
+    const pct = verseNum / surah.verses;
+    const approxPage = Math.round(range.startPage + pct * (range.totalPages - 1));
+    return Math.min(Math.max(approxPage, range.startPage), range.endPage);
+}
+
+// Total halaman mushaf Madinah
+const TOTAL_PAGES = 604;
+
+// ═══════════════════════════════════════════════
 // HELPERS
 // ═══════════════════════════════════════════════
 
@@ -722,9 +780,10 @@ function HaidBanner({ isHaidToday, onToggle }) {
 // WEEKLY STATS
 // ═══════════════════════════════════════════════
 
-function WeeklyStats({ haidLog, onToggleHaid }) {
+function WeeklyStats({ haidLog, onToggleHaid, pageMode }) {
     const dailyLog = loadLocal('q-daily-log', {});
     const haid = haidLog || {};
+    const isPageMode = pageMode === 'halaman';
 
     // Build last 7 days array
     const days = [];
@@ -733,10 +792,13 @@ function WeeklyStats({ haidLog, onToggleHaid }) {
         d.setDate(d.getDate() - i);
         const key = d.toLocaleDateString('en-CA');
         const label = d.toLocaleDateString('id-ID', { weekday: 'short' }).substring(0, 3);
-        const count = dailyLog[key] || 0;
+        const countAyat = dailyLog[key] || 0;
+        // Konversi kasar: 6236 ayat / 604 halaman ≈ 10.3 ayat per halaman
+        const countPages = countAyat > 0 ? Math.max(1, Math.round(countAyat / 10.3)) : 0;
+        const count = isPageMode ? countPages : countAyat;
         const isHaid = haid[key] === true;
         const isToday = i === 0;
-        days.push({ key, label, count, isHaid, isToday });
+        days.push({ key, label, count, countAyat, isHaid, isToday });
     }
 
     const maxCount = Math.max(...days.map(function(d) { return d.count; }), 1);
@@ -744,6 +806,7 @@ function WeeklyStats({ haidLog, onToggleHaid }) {
     const haidDays = days.filter(function(d) { return d.isHaid; }).length;
     const totalWeek = days.reduce(function(a, d) { return a + d.count; }, 0);
     const avgPerDay = activeDays > 0 ? Math.round(totalWeek / activeDays) : 0;
+    const unit = isPageMode ? 'hlm' : 'ayat';
 
     return (
         <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-5 shadow-xl border border-slate-100 dark:border-slate-800">
@@ -754,11 +817,11 @@ function WeeklyStats({ haidLog, onToggleHaid }) {
                 <div className="flex gap-3 text-right">
                     <div>
                         <div className="text-[8px] font-black uppercase tracking-widest text-slate-400">Total</div>
-                        <div className="text-sm font-black text-emerald-600 tabular-nums">{totalWeek}</div>
+                        <div className="text-sm font-black text-emerald-600 tabular-nums">{totalWeek} <span className="text-[8px]">{unit}</span></div>
                     </div>
                     <div>
                         <div className="text-[8px] font-black uppercase tracking-widest text-slate-400">Rata-rata</div>
-                        <div className="text-sm font-black text-emerald-600 tabular-nums">{avgPerDay}/hr</div>
+                        <div className="text-sm font-black text-emerald-600 tabular-nums">{avgPerDay}/{unit}</div>
                     </div>
                     {haidDays > 0 && (
                         <div>
@@ -921,11 +984,12 @@ function JuzMap({ progress }) {
 // KHATAM TARGET (by date)
 // ═══════════════════════════════════════════════
 
-function KhatamTarget({ currentTotal, haidLog }) {
+function KhatamTarget({ currentTotal, haidLog, pageMode, pagesRead }) {
     const [targetDt, setTargetDt] = useState(function() { return loadLocal('q-khatam-target', ''); });
     const [editing, setEditing] = useState(false);
     const [inputVal, setInputVal] = useState('');
     const haid = haidLog || {};
+    const isPageMode = pageMode === 'halaman';
 
     useEffect(function() { saveLocal('q-khatam-target', targetDt); }, [targetDt]);
 
@@ -949,10 +1013,12 @@ function KhatamTarget({ currentTotal, haidLog }) {
 
         const remaining = Math.max(0, 6236 - currentTotal);
         const ayatPerDay = activeDaysLeft > 0 ? Math.ceil(remaining / activeDaysLeft) : remaining;
+        const pagesRemaining = Math.max(0, TOTAL_PAGES - (pagesRead || 0));
+        const pagesPerDay = activeDaysLeft > 0 ? Math.ceil(pagesRemaining / activeDaysLeft) : pagesRemaining;
         const pct = Math.round((currentTotal / 6236) * 100);
         const haidDaysAhead = totalCalDays + 1 - activeDaysLeft;
-        return { expired: false, totalCalDays, activeDaysLeft, ayatPerDay, remaining, pct, haidDaysAhead };
-    }, [targetDt, currentTotal, haid]);
+        return { expired: false, totalCalDays, activeDaysLeft, ayatPerDay, pagesPerDay, remaining, pagesRemaining, pct, haidDaysAhead };
+    }, [targetDt, currentTotal, haid, pagesRead]);
 
     if (!targetDt && !editing) {
         return (
@@ -1056,18 +1122,24 @@ function KhatamTarget({ currentTotal, haidLog }) {
                     <div className="grid grid-cols-3 gap-2 text-center">
                         <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl py-2.5 px-1">
                             <div className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Selesai</div>
-                            <div className="font-black text-base text-slate-700 dark:text-slate-200 tabular-nums">{currentTotal}</div>
-                            <div className="text-[7px] font-black text-slate-400">ayat</div>
+                            <div className="font-black text-base text-slate-700 dark:text-slate-200 tabular-nums">
+                                {isPageMode ? (pagesRead || 0) : currentTotal}
+                            </div>
+                            <div className="text-[7px] font-black text-slate-400">{isPageMode ? 'halaman' : 'ayat'}</div>
                         </div>
                         <div className="bg-emerald-50 dark:bg-emerald-950/40 rounded-2xl py-2.5 px-1">
                             <div className="text-[8px] font-black uppercase tracking-widest text-emerald-500 mb-0.5">Harus/hari</div>
-                            <div className="font-black text-base text-emerald-600 tabular-nums">{plan.ayatPerDay}</div>
-                            <div className="text-[7px] font-black text-emerald-400">ayat</div>
+                            <div className="font-black text-base text-emerald-600 tabular-nums">
+                                {isPageMode ? plan.pagesPerDay : plan.ayatPerDay}
+                            </div>
+                            <div className="text-[7px] font-black text-emerald-400">{isPageMode ? 'hlm' : 'ayat'}</div>
                         </div>
                         <div className="bg-slate-50 dark:bg-slate-800 rounded-2xl py-2.5 px-1">
                             <div className="text-[8px] font-black uppercase tracking-widest text-slate-400 mb-0.5">Sisa</div>
-                            <div className="font-black text-base text-slate-700 dark:text-slate-200 tabular-nums">{plan.remaining}</div>
-                            <div className="text-[7px] font-black text-slate-400">ayat</div>
+                            <div className="font-black text-base text-slate-700 dark:text-slate-200 tabular-nums">
+                                {isPageMode ? plan.pagesRemaining : plan.remaining}
+                            </div>
+                            <div className="text-[7px] font-black text-slate-400">{isPageMode ? 'halaman' : 'ayat'}</div>
                         </div>
                     </div>
 
@@ -1149,6 +1221,8 @@ function App() {
     const [targetDate, setTargetDate] = useState(() => loadLocal('q-tdate', new Date().toLocaleDateString('en-CA')));
     // Haid mode — key baru, tidak ganggu data lama sama sekali
     const [haidLog, setHaidLog] = useState(() => loadLocal('q-haid-log', {}));
+    // Mode tampilan: 'ayat' atau 'halaman' — hanya preferensi UI, tidak ganggu data
+    const [pageMode, setPageMode] = useState(() => loadLocal('q-page-mode', 'ayat'));
 
     // Refs for stale-closure-safe access
     const lastActiveDateRef = useRef(lastActiveDate);
@@ -1173,6 +1247,7 @@ function App() {
     useEffect(function() { saveLocal('q-dstart', dailyStart); }, [dailyStart]);
     useEffect(function() { saveLocal('q-tdate', targetDate); }, [targetDate]);
     useEffect(function() { saveLocal('q-haid-log', haidLog); }, [haidLog]);
+    useEffect(function() { saveLocal('q-page-mode', pageMode); }, [pageMode]);
 
     // Haid helpers
     const today = new Date().toLocaleDateString('en-CA');
@@ -1293,10 +1368,13 @@ function App() {
         SURAH_DATA.forEach(function(s) { if ((progress[s.number] || 0) === s.verses) surahsDone++; });
         let juzDone = 0;
         for (let i = 1; i <= 30; i++) { if (isJuzComplete(i, progress)) juzDone++; }
+        const pagesRead = versesToPages(progress);
         return {
             pct: Math.round((currentTotal / 6236) * 100),
             surahsDone,
-            juzDone
+            juzDone,
+            pagesRead,
+            pagesPct: Math.round((pagesRead / TOTAL_PAGES) * 100)
         };
     }, [progress, currentTotal]);
 
@@ -1452,18 +1530,40 @@ function App() {
                     <div className="bg-white/10 backdrop-blur-xl rounded-3xl p-5 border border-white/20 shadow-2xl">
                         <div className="flex justify-between items-baseline mb-3">
                             <span className="text-[9px] font-black uppercase text-emerald-100 opacity-80 tracking-widest">Total Progress</span>
-                            <span className="text-5xl font-black tabular-nums">{stats.pct}%</span>
+                            <span className="text-5xl font-black tabular-nums">{pageMode === 'halaman' ? stats.pagesPct : stats.pct}%</span>
                         </div>
                         <div className="w-full bg-black/10 rounded-full h-4 mb-3 overflow-hidden shadow-inner">
                             <div
                                 className="bg-white h-full rounded-full transition-all duration-1000 shadow-lg"
-                                style={{ width: stats.pct + '%' }}
+                                style={{ width: (pageMode === 'halaman' ? stats.pagesPct : stats.pct) + '%' }}
                             />
                         </div>
-                        <div className="grid grid-cols-2 gap-3 text-center">
+                        <div className="grid grid-cols-2 gap-3 text-center mb-3">
                             <div className="bg-white/5 p-2 rounded-xl text-[9px] font-black uppercase tracking-wider">{stats.surahsDone}/114 Surah</div>
-                            <div className="bg-white/5 p-2 rounded-xl text-[9px] font-black uppercase tracking-wider">{stats.juzDone}/30 Juz</div>
+                            <div className="bg-white/5 p-2 rounded-xl text-[9px] font-black uppercase tracking-wider">
+                                {pageMode === 'halaman' ? stats.pagesRead + '/604 Hlm' : stats.juzDone + '/30 Juz'}
+                            </div>
                         </div>
+                        {/* Toggle Ayat / Halaman */}
+                        <div className="bg-black/10 rounded-2xl p-1 flex gap-1">
+                            <button
+                                onClick={function() { setPageMode('ayat'); }}
+                                className={'flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ' + (pageMode === 'ayat' ? 'bg-white text-emerald-700 shadow' : 'text-white/60')}
+                            >
+                                Ayat
+                            </button>
+                            <button
+                                onClick={function() { setPageMode('halaman'); }}
+                                className={'flex-1 py-2 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all ' + (pageMode === 'halaman' ? 'bg-white text-emerald-700 shadow' : 'text-white/60')}
+                            >
+                                Halaman
+                            </button>
+                        </div>
+                        {pageMode === 'halaman' && (
+                            <div className="text-center mt-2 text-[7px] font-black text-white/40 uppercase tracking-widest">
+                                Referensi: Mushaf Madinah 604 hlm
+                            </div>
+                        )}
                     </div>
                 </div>
             </header>
@@ -1548,8 +1648,8 @@ function App() {
                 {viewMode === 'surah' && !searchTerm && (
                     <div className="space-y-4">
                         <HaidBanner isHaidToday={isHaidToday} onToggle={toggleHaidToday} />
-                        <KhatamTarget currentTotal={currentTotal} haidLog={haidLog} />
-                        <WeeklyStats haidLog={haidLog} onToggleHaid={toggleHaidDate} />
+                        <KhatamTarget currentTotal={currentTotal} haidLog={haidLog} pageMode={pageMode} pagesRead={stats.pagesRead} />
+                        <WeeklyStats haidLog={haidLog} onToggleHaid={toggleHaidDate} pageMode={pageMode} />
                         <JuzMap progress={progress} />
                     </div>
                 )}
@@ -1592,6 +1692,8 @@ function App() {
                 {viewMode === 'surah' && filteredSurahs.map(function(surah) {
                     const cur = progress[surah.number] || 0;
                     const comp = cur === surah.verses;
+                    const range = getSurahPageRange(surah.number);
+                    const curPage = cur > 0 ? verseToPageInSurah(surah.number, cur) : null;
                     return (
                         <div
                             key={surah.number}
@@ -1607,6 +1709,9 @@ function App() {
                                         <h3 className="font-black text-base tracking-tight">{surah.name}</h3>
                                         <p className="text-[9px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest tabular-nums">
                                             {surah.verses} Ayat • Juz {getJuzForVerse(surah.number, cur)}
+                                            {pageMode === 'halaman' && (
+                                                <span className="text-slate-300 dark:text-slate-600"> • Hlm {range.startPage}–{range.endPage}</span>
+                                            )}
                                         </p>
                                     </div>
                                 </div>
@@ -1620,7 +1725,12 @@ function App() {
                             <div className="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-3xl border border-slate-100 dark:border-slate-800">
                                 <div className="flex justify-between text-[9px] font-black text-slate-400 dark:text-slate-500 uppercase tracking-widest mb-2 tabular-nums">
                                     <span>Progress</span>
-                                    <span>{Math.round((cur / surah.verses) * 100)}%</span>
+                                    <span>
+                                        {Math.round((cur / surah.verses) * 100)}%
+                                        {pageMode === 'halaman' && curPage && (
+                                            <span className="text-slate-300 dark:text-slate-600"> • ~Hlm {curPage}</span>
+                                        )}
+                                    </span>
                                 </div>
                                 <div className="h-3.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden mb-4 shadow-inner">
                                     <div
@@ -1642,7 +1752,9 @@ function App() {
                                             placeholder="0"
                                             onChange={function(e) { updateVerse(surah.number, parseInt(e.target.value) || 0); }}
                                         />
-                                        <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 text-[8px] font-black text-slate-400 uppercase bg-white dark:bg-slate-800 px-2 tracking-widest rounded-full border border-slate-100 dark:border-slate-700 shadow-sm">Ayat</span>
+                                        <span className="absolute -bottom-2.5 left-1/2 -translate-x-1/2 text-[8px] font-black text-slate-400 uppercase bg-white dark:bg-slate-800 px-2 tracking-widest rounded-full border border-slate-100 dark:border-slate-700 shadow-sm whitespace-nowrap">
+                                            {pageMode === 'halaman' && curPage ? 'Ayat (≈Hlm ' + curPage + ')' : 'Ayat'}
+                                        </span>
                                     </div>
                                     <button
                                         onClick={function() { updateVerse(surah.number, cur + 1); }}
@@ -1717,6 +1829,7 @@ function App() {
                                         removeLocal('q-daily-log-start');
                                         removeLocal('q-khatam-target');
                                         removeLocal('q-haid-log');
+                                        removeLocal('q-page-mode');
                                         alert('Data dibersihkan.');
                                     }
                                 }}
@@ -1739,7 +1852,7 @@ function App() {
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800">
                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Versi</span>
-                                <span className="text-xs font-black bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-full dark:text-slate-200">5.0.0</span>
+                                <span className="text-xs font-black bg-slate-50 dark:bg-slate-800 px-3 py-1 rounded-full dark:text-slate-200">6.0.0</span>
                             </div>
                             <div className="flex justify-between items-center py-2 border-b border-slate-50 dark:border-slate-800">
                                 <span className="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Penyimpanan</span>
@@ -1751,7 +1864,7 @@ function App() {
                             </div>
                         </div>
                         <p className="text-center text-[8px] font-black text-slate-300 dark:text-slate-700 uppercase tracking-widest">
-                            Jurnal Quran by Arief • v5.0.0
+                            Jurnal Quran by Arief • v6.0.0
                         </p>
                     </div>
                 )}
