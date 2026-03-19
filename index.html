@@ -944,19 +944,24 @@ function WeeklyStats({ haidLog, onToggleHaid, pageMode }) {
                     const minH = day.count > 0 ? 8 : 4;
 
                     if (day.isHaid) {
-                        return (
-                            <div key={day.key} className="flex-1 flex flex-col items-center justify-end gap-1">
-                                <div className="text-[10px] leading-none">🌸</div>
-                                <div
-                                    className={'w-full rounded-lg border-2 ' + (day.isToday ? 'border-pink-400 bg-pink-100 dark:bg-pink-900/40' : 'border-pink-200 bg-pink-50 dark:bg-pink-900/20')}
-                                    style={{ height: '18px' }}
-                                />
-                                <div className={'text-[8px] font-black uppercase ' + (day.isToday ? 'text-pink-500' : 'text-pink-400')}>
-                                    {day.label}
-                                </div>
-                            </div>
-                        );
-                    }
+    return (
+        <button
+            key={day.key}
+            onClick={function() { onToggleHaid(day.key); }}
+            className="flex-1 flex flex-col items-center justify-end gap-1 active:opacity-70 transition-opacity"
+            title={'Batalkan haid ' + day.label}
+        >
+            <div className="text-[10px] leading-none">🌸</div>
+            <div
+                className={'w-full rounded-lg border-2 ' + (day.isToday ? 'border-pink-400 bg-pink-100 dark:bg-pink-900/40' : 'border-pink-200 bg-pink-50 dark:bg-pink-900/20')}
+                style={{ height: '18px' }}
+            />
+            <div className={'text-[8px] font-black uppercase ' + (day.isToday ? 'text-pink-500' : 'text-pink-400')}>
+                {day.label}
+            </div>
+        </button>
+    );
+}
 
                     return (
                         <button
