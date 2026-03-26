@@ -141,6 +141,34 @@ function loadLocal(key, fallback) {
 function saveLocal(key, value) { try { localStorage.setItem(key, JSON.stringify(value)); } catch (e) {} }
 function removeLocal(key) { try { localStorage.removeItem(key); } catch (e) {} }
 
+// Hitung ulang streak dari lastActiveDate mundur ke belakang,
+// skip hari haid, berhenti di hari non-haid yang tidak ada di dailyLog
+function recalcStreak(lastActive, haidLog) {
+    if (!lastActive) return 0;
+    const log = loadLocal('q-daily-log', {});
+    let streak = 1;
+    let cursor = new Date(lastActive);
+    cursor.setDate(cursor.getDate() - 1);
+    // Mundur maksimal 365 hari untuk keamanan
+    for (let i = 0; i < 365; i++) {
+        const k = cursor.toLocaleDateString('en-CA');
+        if (haidLog[k]) {
+            // Hari haid — skip, tidak putus streak
+            cursor.setDate(cursor.getDate() - 1);
+            continue;
+        }
+        if ((log[k] || 0) > 0) {
+            // Hari baca — lanjut hitung streak
+            streak++;
+            cursor.setDate(cursor.getDate() - 1);
+        } else {
+            // Hari kosong non-haid — streak berhenti di sini
+            break;
+        }
+    }
+    return streak;
+}
+
 function parseTime12(timeStr) {
     if (!timeStr) return null;
     const parts = timeStr.trim().split(' ');
@@ -808,7 +836,13 @@ function App() {
     useEffect(() => { if (targetJuz) saveLocal('q-tjuz', targetJuz); else removeLocal('q-tjuz'); }, [targetJuz]);
     useEffect(() => { saveLocal('q-dstart', dailyStart); }, [dailyStart]);
     useEffect(() => { saveLocal('q-tdate', targetDate); }, [targetDate]);
-    useEffect(() => { saveLocal('q-haid-log', haidLog); }, [haidLog]);
+    useEffect(() => {
+        saveLocal('q-haid-log', haidLog);
+        if (lastActiveDate) {
+            const newStreak = recalcStreak(lastActiveDate, haidLog);
+            setStreak(newStreak);
+        }
+    }, [haidLog]);
     useEffect(() => { saveLocal('q-page-mode', pageMode); }, [pageMode]);
     useEffect(() => { saveLocal('q-target-mode', targetMode); }, [targetMode]);
     useEffect(() => { saveLocal('q-page-target', pageTarget); }, [pageTarget]);
