@@ -1,8 +1,10 @@
-const CACHE_NAME = 'jurnal-quran-v6';
+const CACHE_NAME = 'jurnal-quran-v7';
 
 const APP_SHELL = [
   '/',
   '/index.html',
+  '/app.js',
+  '/style.css',
   '/manifest.json',
   '/icon-192.png',
   '/icon-512.png'
@@ -11,8 +13,6 @@ const APP_SHELL = [
 const EXTERNAL_CACHE = [
   'https://unpkg.com/react@18/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
-  'https://unpkg.com/@babel/standalone/babel.min.js',
-  'https://cdn.tailwindcss.com',
   'https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800;900&display=swap'
 ];
 
