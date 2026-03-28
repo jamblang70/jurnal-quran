@@ -10,7 +10,6 @@ PWA untuk tracking progress baca Al-Quran harian. Semua data disimpan lokal di b
 ├── app.jsx             # Source utama — semua komponen React + logika app (EDIT DI SINI)
 ├── app.js              # Hasil compile dari app.jsx — jangan diedit manual
 ├── style.css           # Hasil build Tailwind — jangan diedit manual
-├── tailwind.css        # Input Tailwind (hanya 3 baris @tailwind directives)
 ├── tailwind.config.js  # Konfigurasi Tailwind (darkMode: 'class', content scan)
 ├── sw.js               # Service Worker — cache strategy untuk offline support
 ├── manifest.json       # PWA manifest (nama, ikon, theme color, dll)
@@ -32,7 +31,7 @@ npm run build
 
 # Atau build terpisah
 npm run build:js    # compile app.jsx → app.js
-npm run build:css   # build tailwind.css → style.css (minified)
+npm run build:css   # build tailwind → style.css (minified, tanpa file input)
 ```
 
 Untuk development dengan auto-rebuild saat file berubah, buka dua terminal:

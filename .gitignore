@@ -1,9 +1,6 @@
 # Dependencies
 node_modules/
 
-# Build input (tidak perlu di-serve)
-tailwind.css
-
 # Editor
 .vscode/
 

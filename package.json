@@ -4,10 +4,10 @@
   "private": true,
   "scripts": {
     "build:js": "babel app.jsx --out-file app.js --presets @babel/preset-react",
-    "build:css": "tailwindcss -i tailwind.css -o style.css --minify",
+    "build:css": "tailwindcss -o style.css --minify",
     "build": "npm run build:js && npm run build:css",
     "watch:js": "babel app.jsx --out-file app.js --presets @babel/preset-react --watch",
-    "watch:css": "tailwindcss -i tailwind.css -o style.css --watch"
+    "watch:css": "tailwindcss -o style.css --watch"
   },
   "devDependencies": {
     "@babel/cli": "^7.28.6",
