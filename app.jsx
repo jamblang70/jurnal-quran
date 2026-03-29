@@ -912,7 +912,15 @@ function App() {
     }, [progress, recordActivity]);
 
     function exportData() {
-        const data = { progress, lastRead, streak, lastActiveDate, khatamCount, targetJuz, dailyStart, targetDate, isDark };
+        const data = {
+            progress, lastRead, streak, lastActiveDate, khatamCount,
+            targetJuz, dailyStart, targetDate, isDark,
+            haidLog,
+            pageMode, targetMode, pageTarget,
+            dailyLog: loadLocal('q-daily-log', {}),
+            dailyLogStart: loadLocal('q-daily-log-start', {}),
+            khatamTarget: loadLocal('q-khatam-target', ''),
+        };
         const blob = new Blob([JSON.stringify(data,null,2)], { type:'application/json' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a'); a.href = url; a.download = 'jurnal-quran-' + new Date().toISOString().split('T')[0] + '.json'; a.click();
@@ -935,6 +943,13 @@ function App() {
                     if (d.dailyStart !== undefined) setDailyStart(parseInt(d.dailyStart)||0);
                     if (d.targetDate !== undefined) setTargetDate(d.targetDate);
                     if (d.isDark !== undefined) setIsDark(d.isDark);
+                    if (d.haidLog !== undefined) setHaidLog(d.haidLog);
+                    if (d.pageMode !== undefined) setPageMode(d.pageMode);
+                    if (d.targetMode !== undefined) setTargetMode(d.targetMode);
+                    if (d.pageTarget !== undefined) setPageTarget(parseInt(d.pageTarget)||10);
+                    if (d.dailyLog !== undefined) saveLocal('q-daily-log', d.dailyLog);
+                    if (d.dailyLogStart !== undefined) saveLocal('q-daily-log-start', d.dailyLogStart);
+                    if (d.khatamTarget !== undefined) saveLocal('q-khatam-target', d.khatamTarget);
                     alert('Data berhasil dipulihkan!');
                 }
             } catch (err) { alert('File tidak valid atau rusak.'); }
