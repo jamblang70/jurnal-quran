@@ -2450,6 +2450,9 @@ function App() {
         removeLocal('q-page-mode');
         removeLocal('q-target-mode');
         removeLocal('q-page-target');
+        removeLocal('q-dzikir-active');
+        removeLocal('q-dzikir-selected');
+        removeLocal('q-dzikir-counts');
         alert('Data dibersihkan.');
       }
     },

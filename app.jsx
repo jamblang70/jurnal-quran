@@ -1395,7 +1395,7 @@ function App() {
                                 onClick={() => {
                                     if (window.confirm('Hapus seluruh progres?')) {
                                         setProgress({}); setKhatamCount(0); setStreak(0); setLastRead(null); setLastActiveDate(null); setTargetJuz(null); setDailyStart(0);
-                                        removeLocal('q-daily-log'); removeLocal('q-daily-log-start'); removeLocal('q-khatam-target'); removeLocal('q-haid-log'); removeLocal('q-page-mode'); removeLocal('q-target-mode'); removeLocal('q-page-target');
+                                        removeLocal('q-daily-log'); removeLocal('q-daily-log-start'); removeLocal('q-khatam-target'); removeLocal('q-haid-log'); removeLocal('q-page-mode'); removeLocal('q-target-mode'); removeLocal('q-page-target'); removeLocal('q-dzikir-active'); removeLocal('q-dzikir-selected'); removeLocal('q-dzikir-counts');
                                         alert('Data dibersihkan.');
                                     }
                                 }}
