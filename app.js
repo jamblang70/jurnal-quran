@@ -1217,7 +1217,19 @@ function DzikirView() {
     }
   })), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1 tabular-nums"
-  }, /*#__PURE__*/React.createElement("span", null, selectedCount, "/", selectedItem.target), /*#__PURE__*/React.createElement("span", null, selectedPct, "%"))))), /*#__PURE__*/React.createElement("button", {
+  }, /*#__PURE__*/React.createElement("span", null, selectedCount, "/", selectedItem.target), /*#__PURE__*/React.createElement("span", null, selectedPct, "%")))), (() => {
+    const currentIdx = session.items.findIndex(item => item.id === selectedItem.id);
+    const nextItem = session.items[currentIdx + 1];
+    if (!selectedDone || !nextItem) return null;
+    return /*#__PURE__*/React.createElement("button", {
+      onClick: () => setSelectedItemId(nextItem.id),
+      className: "w-full mt-4 bg-emerald-600 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-lg"
+    }, "Selanjutnya ", /*#__PURE__*/React.createElement(Icon, {
+      name: "chevronRight",
+      size: 16,
+      strokeWidth: 3
+    }));
+  })()), /*#__PURE__*/React.createElement("button", {
     onClick: resetSession,
     className: "w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-400 font-black py-4 rounded-2xl text-[9px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-lg"
   }, /*#__PURE__*/React.createElement(Icon, {

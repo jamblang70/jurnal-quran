@@ -512,6 +512,19 @@ function DzikirView() {
                         </div>
                     </div>
                 </div>
+                {(() => {
+                    const currentIdx = session.items.findIndex(item => item.id === selectedItem.id);
+                    const nextItem = session.items[currentIdx + 1];
+                    if (!selectedDone || !nextItem) return null;
+                    return (
+                        <button
+                            onClick={() => setSelectedItemId(nextItem.id)}
+                            className="w-full mt-4 bg-emerald-600 text-white font-black py-4 rounded-2xl text-sm uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-lg"
+                        >
+                            Selanjutnya <Icon name="chevronRight" size={16} strokeWidth={3} />
+                        </button>
+                    );
+                })()}
             </div>
 
             <button onClick={resetSession} className="w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-400 font-black py-4 rounded-2xl text-[9px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-lg">
