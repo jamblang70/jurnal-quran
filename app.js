@@ -1122,9 +1122,7 @@ function DzikirView() {
     className: "text-[9px] font-black uppercase tracking-widest text-white/70 mb-1"
   }, session.time), /*#__PURE__*/React.createElement("h2", {
     className: "text-3xl font-black tracking-tight"
-  }, session.title), /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-white/75 mt-1"
-  }, "Satu tombol counter \u2022 suara + getar saat dipencet")), /*#__PURE__*/React.createElement("div", {
+  }, session.title)), /*#__PURE__*/React.createElement("div", {
     className: "text-5xl drop-shadow"
   }, session.icon)), /*#__PURE__*/React.createElement("div", {
     className: "bg-white/15 rounded-[1.7rem] p-4 border border-white/20 backdrop-blur-xl"

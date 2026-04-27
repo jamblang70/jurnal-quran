@@ -452,7 +452,6 @@ function DzikirView() {
                         <div>
                             <div className="text-[9px] font-black uppercase tracking-widest text-white/70 mb-1">{session.time}</div>
                             <h2 className="text-3xl font-black tracking-tight">{session.title}</h2>
-                            <p className="text-xs font-bold text-white/75 mt-1">Satu tombol counter • suara + getar saat dipencet</p>
                         </div>
                         <div className="text-5xl drop-shadow">{session.icon}</div>
                     </div>
