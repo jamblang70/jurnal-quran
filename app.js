@@ -680,16 +680,74 @@ const DZIKIR_SESSIONS = [{
   gradient: 'from-amber-400 via-orange-500 to-rose-500',
   icon: '🌅',
   items: [{
-    id: 'istighfar',
-    text: 'Astaghfirullah',
-    target: 100
+    id: 'kursi',
+    title: 'Ayat Kursi',
+    arabic: 'اللّٰهُ لَا إِلٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمٰوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِيْ يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيْهِمْ وَمَا خَلْفَهُمْ ۚ وَلَا يُحِيْطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمٰوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيْمُ',
+    latin: 'Allahu la ilaha illa huwal hayyul qayyum...',
+    note: 'QS. Al-Baqarah:255',
+    target: 1
+  }, {
+    id: 'muawwidzat',
+    title: 'Al-Ikhlas, Al-Falaq, An-Nas',
+    arabic: 'قُلْ هُوَ اللّٰهُ أَحَدٌ ... قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ... قُلْ أَعُوذُ بِرَبِّ النَّاسِ',
+    latin: 'Qul huwallahu ahad... Qul a‘udzu bi rabbil falaq... Qul a‘udzu bi rabbin nas...',
+    note: 'Dibaca 3 kali',
+    target: 3
+  }, {
+    id: 'sayyidul-istighfar',
+    title: 'Sayyidul Istighfar',
+    arabic: 'اللّٰهُمَّ أَنْتَ رَبِّيْ لَا إِلٰهَ إِلَّا أَنْتَ، خَلَقْتَنِيْ وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِيْ، فَاغْفِرْ لِيْ، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوْبَ إِلَّا أَنْتَ',
+    latin: 'Allahumma anta rabbi la ilaha illa anta...',
+    note: 'Sayyidul istighfar',
+    target: 1
+  }, {
+    id: 'afiyah',
+    title: 'Memohon Afiyah',
+    arabic: 'اللّٰهُمَّ عَافِنِيْ فِيْ بَدَنِيْ، اللّٰهُمَّ عَافِنِيْ فِيْ سَمْعِيْ، اللّٰهُمَّ عَافِنِيْ فِيْ بَصَرِيْ، لَا إِلٰهَ إِلَّا أَنْتَ. اللّٰهُمَّ إِنِّيْ أَعُوذُ بِكَ مِنَ الْكُفْرِ وَالْفَقْرِ، وَأَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ، لَا إِلٰهَ إِلَّا أَنْتَ',
+    latin: 'Allahumma ‘afini fi badani... Allahumma inni a‘udzu bika minal kufri wal faqr...',
+    note: 'Dibaca 3 kali',
+    target: 3
+  }, {
+    id: 'hasbiyallah',
+    title: 'Hasbiyallah',
+    arabic: 'حَسْبِيَ اللّٰهُ لَا إِلٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ، وَهُوَ رَبُّ الْعَرْشِ الْعَظِيْمِ',
+    latin: 'Hasbiyallahu la ilaha illa huwa, ‘alaihi tawakkaltu, wa huwa rabbul ‘arsyil ‘azhim',
+    note: 'Dibaca 7 kali',
+    target: 7
+  }, {
+    id: 'bismillah',
+    title: 'Bismillahilladzi',
+    arabic: 'بِسْمِ اللّٰهِ الَّذِيْ لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ، وَهُوَ السَّمِيْعُ الْعَلِيْمُ',
+    latin: 'Bismillahilladzi la yadhurru ma‘a ismihi syai’un fil ardhi wa la fis sama’, wa huwas sami‘ul ‘alim',
+    note: 'Dibaca 3 kali',
+    target: 3
+  }, {
+    id: 'radhiitu',
+    title: 'Ridha kepada Allah',
+    arabic: 'رَضِيْتُ بِاللّٰهِ رَبًّا، وَبِالْإِسْلَامِ دِيْنًا، وَبِمُحَمَّدٍ نَبِيًّا',
+    latin: 'Radhitu billahi rabba, wa bil islami dina, wa bi Muhammadin nabiyya',
+    note: 'Dibaca 3 kali',
+    target: 3
+  }, {
+    id: 'hayyu-qayyum',
+    title: 'Ya Hayyu Ya Qayyum',
+    arabic: 'يَا حَيُّ يَا قَيُّوْمُ، بِرَحْمَتِكَ أَسْتَغِيْثُ، أَصْلِحْ لِيْ شَأْنِيْ كُلَّهُ، وَلَا تَكِلْنِيْ إِلَى نَفْسِيْ طَرْفَةَ عَيْنٍ',
+    latin: 'Ya Hayyu ya Qayyum, bi rahmatika astaghits...',
+    note: 'Dibaca 1 kali',
+    target: 1
   }, {
     id: 'subhanallah',
-    text: 'Subhanallah wa bihamdihi',
+    title: 'Subhanallahi wa Bihamdihi',
+    arabic: 'سُبْحَانَ اللّٰهِ وَبِحَمْدِهِ',
+    latin: 'Subhanallahi wa bihamdihi',
+    note: 'Dibaca 100 kali',
     target: 100
   }, {
     id: 'tahlil',
-    text: 'La ilaha illallah wahdahu la syarika lah...',
+    title: 'Tahlil',
+    arabic: 'لَا إِلٰهَ إِلَّا اللّٰهُ وَحْدَهُ لَا شَرِيْكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيْرٌ',
+    latin: 'La ilaha illallah wahdahu la syarika lah...',
+    note: 'Dibaca 100 kali setiap hari',
     target: 100
   }]
 }, {
@@ -700,16 +758,81 @@ const DZIKIR_SESSIONS = [{
   gradient: 'from-indigo-500 via-violet-600 to-slate-900',
   icon: '🌙',
   items: [{
-    id: 'istighfar',
-    text: 'Astaghfirullah',
-    target: 100
+    id: 'kursi',
+    title: 'Ayat Kursi',
+    arabic: 'اللّٰهُ لَا إِلٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمٰوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِيْ يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيْهِمْ وَمَا خَلْفَهُمْ ۚ وَلَا يُحِيْطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمٰوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيْمُ',
+    latin: 'Allahu la ilaha illa huwal hayyul qayyum...',
+    note: 'QS. Al-Baqarah:255',
+    target: 1
+  }, {
+    id: 'muawwidzat',
+    title: 'Al-Ikhlas, Al-Falaq, An-Nas',
+    arabic: 'قُلْ هُوَ اللّٰهُ أَحَدٌ ... قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ ... قُلْ أَعُوذُ بِرَبِّ النَّاسِ',
+    latin: 'Qul huwallahu ahad... Qul a‘udzu bi rabbil falaq... Qul a‘udzu bi rabbin nas...',
+    note: 'Dibaca 3 kali',
+    target: 3
+  }, {
+    id: 'sayyidul-istighfar',
+    title: 'Sayyidul Istighfar',
+    arabic: 'اللّٰهُمَّ أَنْتَ رَبِّيْ لَا إِلٰهَ إِلَّا أَنْتَ، خَلَقْتَنِيْ وَأَنَا عَبْدُكَ، وَأَنَا عَلَى عَهْدِكَ وَوَعْدِكَ مَا اسْتَطَعْتُ، أَعُوذُ بِكَ مِنْ شَرِّ مَا صَنَعْتُ، أَبُوءُ لَكَ بِنِعْمَتِكَ عَلَيَّ، وَأَبُوءُ بِذَنْبِيْ، فَاغْفِرْ لِيْ، فَإِنَّهُ لَا يَغْفِرُ الذُّنُوْبَ إِلَّا أَنْتَ',
+    latin: 'Allahumma anta rabbi la ilaha illa anta...',
+    note: 'Sayyidul istighfar',
+    target: 1
+  }, {
+    id: 'afiyah',
+    title: 'Memohon Afiyah',
+    arabic: 'اللّٰهُمَّ عَافِنِيْ فِيْ بَدَنِيْ، اللّٰهُمَّ عَافِنِيْ فِيْ سَمْعِيْ، اللّٰهُمَّ عَافِنِيْ فِيْ بَصَرِيْ، لَا إِلٰهَ إِلَّا أَنْتَ. اللّٰهُمَّ إِنِّيْ أَعُوذُ بِكَ مِنَ الْكُفْرِ وَالْفَقْرِ، وَأَعُوذُ بِكَ مِنْ عَذَابِ الْقَبْرِ، لَا إِلٰهَ إِلَّا أَنْتَ',
+    latin: 'Allahumma ‘afini fi badani... Allahumma inni a‘udzu bika minal kufri wal faqr...',
+    note: 'Dibaca 3 kali',
+    target: 3
+  }, {
+    id: 'hasbiyallah',
+    title: 'Hasbiyallah',
+    arabic: 'حَسْبِيَ اللّٰهُ لَا إِلٰهَ إِلَّا هُوَ، عَلَيْهِ تَوَكَّلْتُ، وَهُوَ رَبُّ الْعَرْشِ الْعَظِيْمِ',
+    latin: 'Hasbiyallahu la ilaha illa huwa, ‘alaihi tawakkaltu, wa huwa rabbul ‘arsyil ‘azhim',
+    note: 'Dibaca 7 kali',
+    target: 7
+  }, {
+    id: 'kalimat-tammat',
+    title: 'A‘udzu Bikalimatillah',
+    arabic: 'أَعُوْذُ بِكَلِمَاتِ اللّٰهِ التَّامَّاتِ مِنْ شَرِّ مَا خَلَقَ',
+    latin: 'A‘udzu bikalimatillahit tammati min syarri ma khalaq',
+    note: 'Dibaca 3 kali ketika petang',
+    target: 3
+  }, {
+    id: 'bismillah',
+    title: 'Bismillahilladzi',
+    arabic: 'بِسْمِ اللّٰهِ الَّذِيْ لَا يَضُرُّ مَعَ اسْمِهِ شَيْءٌ فِي الْأَرْضِ وَلَا فِي السَّمَاءِ، وَهُوَ السَّمِيْعُ الْعَلِيْمُ',
+    latin: 'Bismillahilladzi la yadhurru ma‘a ismihi syai’un fil ardhi wa la fis sama’, wa huwas sami‘ul ‘alim',
+    note: 'Dibaca 3 kali',
+    target: 3
+  }, {
+    id: 'radhiitu',
+    title: 'Ridha kepada Allah',
+    arabic: 'رَضِيْتُ بِاللّٰهِ رَبًّا، وَبِالْإِسْلَامِ دِيْنًا، وَبِمُحَمَّدٍ نَبِيًّا',
+    latin: 'Radhitu billahi rabba, wa bil islami dina, wa bi Muhammadin nabiyya',
+    note: 'Dibaca 3 kali',
+    target: 3
+  }, {
+    id: 'hayyu-qayyum',
+    title: 'Ya Hayyu Ya Qayyum',
+    arabic: 'يَا حَيُّ يَا قَيُّوْمُ، بِرَحْمَتِكَ أَسْتَغِيْثُ، أَصْلِحْ لِيْ شَأْنِيْ كُلَّهُ، وَلَا تَكِلْنِيْ إِلَى نَفْسِيْ طَرْفَةَ عَيْنٍ',
+    latin: 'Ya Hayyu ya Qayyum, bi rahmatika astaghits...',
+    note: 'Dibaca 1 kali',
+    target: 1
   }, {
     id: 'subhanallah',
-    text: 'Subhanallah wa bihamdihi',
+    title: 'Subhanallahi wa Bihamdihi',
+    arabic: 'سُبْحَانَ اللّٰهِ وَبِحَمْدِهِ',
+    latin: 'Subhanallahi wa bihamdihi',
+    note: 'Dibaca 100 kali',
     target: 100
   }, {
     id: 'tahlil',
-    text: 'La ilaha illallah wahdahu la syarika lah...',
+    title: 'Tahlil',
+    arabic: 'لَا إِلٰهَ إِلَّا اللّٰهُ وَحْدَهُ لَا شَرِيْكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيْرٌ',
+    latin: 'La ilaha illallah wahdahu la syarika lah...',
+    note: 'Dibaca 100 kali setiap hari',
     target: 100
   }]
 }];
@@ -898,6 +1021,7 @@ function DzikirView() {
   const today = new Date().toLocaleDateString('en-CA');
   const audioRef = useRef(null);
   const [activeSession, setActiveSession] = useState(() => loadLocal('q-dzikir-active', 'pagi'));
+  const [selectedItemId, setSelectedItemId] = useState(() => loadLocal('q-dzikir-selected', 'kursi'));
   const [counts, setCounts] = useState(() => {
     const stored = loadLocal('q-dzikir-counts', null);
     if (stored && stored.date === today) return stored;
@@ -911,6 +1035,9 @@ function DzikirView() {
   useEffect(() => {
     saveLocal('q-dzikir-active', activeSession);
   }, [activeSession]);
+  useEffect(() => {
+    saveLocal('q-dzikir-selected', selectedItemId);
+  }, [selectedItemId]);
   useEffect(() => {
     saveLocal('q-dzikir-counts', counts);
   }, [counts]);
@@ -968,11 +1095,16 @@ function DzikirView() {
     }));
   }
   const session = DZIKIR_SESSIONS.find(s => s.id === activeSession) || DZIKIR_SESSIONS[0];
+  const selectedItem = session.items.find(item => item.id === selectedItemId) || session.items[0];
   const sessionCounts = counts[session.id] || {};
   const totalTarget = session.items.reduce((sum, item) => sum + item.target, 0);
   const totalCount = session.items.reduce((sum, item) => sum + (sessionCounts[item.id] || 0), 0);
   const pct = Math.min(100, Math.round(totalCount / totalTarget * 100));
   const allDone = totalCount === totalTarget;
+  const selectedCount = sessionCounts[selectedItem.id] || 0;
+  const selectedDone = selectedCount >= selectedItem.target;
+  const selectedPct = Math.min(100, Math.round(selectedCount / selectedItem.target * 100));
+  const selectedPop = activeKey === session.id + '-' + selectedItem.id + '-' + selectedCount;
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-4 anim-fadeup"
   }, /*#__PURE__*/React.createElement("div", {
@@ -992,7 +1124,7 @@ function DzikirView() {
     className: "text-3xl font-black tracking-tight"
   }, session.title), /*#__PURE__*/React.createElement("p", {
     className: "text-xs font-bold text-white/75 mt-1"
-  }, "Counter tersimpan harian \u2022 suara + getar saat dipencet")), /*#__PURE__*/React.createElement("div", {
+  }, "Satu tombol counter \u2022 suara + getar saat dipencet")), /*#__PURE__*/React.createElement("div", {
     className: "text-5xl drop-shadow"
   }, session.icon)), /*#__PURE__*/React.createElement("div", {
     className: "bg-white/15 rounded-[1.7rem] p-4 border border-white/20 backdrop-blur-xl"
@@ -1012,62 +1144,80 @@ function DzikirView() {
   })), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 text-[9px] font-black uppercase tracking-widest text-white/70 tabular-nums"
   }, totalCount, " / ", totalTarget, " hitungan ", allDone ? '• Selesai' : '')))), /*#__PURE__*/React.createElement("div", {
-    className: "bg-white dark:bg-slate-900 rounded-[1.5rem] shadow-xl p-1.5 flex gap-1 border border-white/60 dark:border-slate-800"
-  }, DZIKIR_SESSIONS.map(s => {
-    const active = activeSession === s.id;
-    return /*#__PURE__*/React.createElement("button", {
-      key: s.id,
-      onClick: () => setActiveSession(s.id),
-      className: 'flex-1 py-3 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2 ' + (active ? 'bg-emerald-600 text-white shadow-lg' : 'text-slate-400')
-    }, /*#__PURE__*/React.createElement("span", null, s.icon), s.label);
+    className: "bg-white dark:bg-slate-900 rounded-[2rem] p-5 shadow-xl border border-slate-100 dark:border-slate-800 space-y-4"
+  }, /*#__PURE__*/React.createElement("label", {
+    className: "block"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2 block"
+  }, "Pilih Waktu Dzikir"), /*#__PURE__*/React.createElement("select", {
+    value: activeSession,
+    onChange: e => {
+      setActiveSession(e.target.value);
+      setSelectedItemId('kursi');
+    },
+    className: "w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-black outline-none focus:border-emerald-500 transition-colors dark:text-slate-200"
+  }, DZIKIR_SESSIONS.map(s => /*#__PURE__*/React.createElement("option", {
+    key: s.id,
+    value: s.id
+  }, s.icon, " ", s.title)))), /*#__PURE__*/React.createElement("label", {
+    className: "block"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2 block"
+  }, "Pilih Bacaan Dzikir"), /*#__PURE__*/React.createElement("select", {
+    value: selectedItem.id,
+    onChange: e => setSelectedItemId(e.target.value),
+    className: "w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-black outline-none focus:border-emerald-500 transition-colors dark:text-slate-200"
+  }, session.items.map(item => /*#__PURE__*/React.createElement("option", {
+    key: item.id,
+    value: item.id
+  }, item.title, " \u2014 ", item.target, "x"))))), /*#__PURE__*/React.createElement("div", {
+    className: 'rounded-[2rem] p-5 border-2 transition-all ' + (selectedDone ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800')
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-start justify-between gap-3 mb-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "min-w-0"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: 'text-lg font-black leading-tight ' + (selectedDone ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-800 dark:text-slate-200')
+  }, selectedItem.title), /*#__PURE__*/React.createElement("div", {
+    className: "text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1"
+  }, selectedDone ? 'Target tercapai' : 'Target ' + selectedItem.target + ' hitungan', " \u2022 ", selectedItem.note)), /*#__PURE__*/React.createElement("div", {
+    className: 'text-3xl font-black tabular-nums transition-transform ' + (selectedPop ? 'scale-110' : '') + ' ' + (selectedDone ? 'text-emerald-600' : 'text-slate-800 dark:text-slate-200')
+  }, selectedCount)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-slate-50 dark:bg-slate-800/80 rounded-[1.7rem] p-5 mb-4 border border-slate-100 dark:border-slate-700"
+  }, /*#__PURE__*/React.createElement("p", {
+    dir: "rtl",
+    className: "font-black text-2xl leading-loose text-slate-900 dark:text-slate-100 text-right"
+  }, selectedItem.arabic), /*#__PURE__*/React.createElement("p", {
+    className: "mt-4 text-xs font-bold leading-relaxed text-slate-500 dark:text-slate-400"
+  }, selectedItem.latin)), /*#__PURE__*/React.createElement("button", {
+    onClick: () => updateCount(selectedItem, 1),
+    className: 'w-full h-40 rounded-[2rem] flex flex-col items-center justify-center gap-2 active:scale-[.97] transition-all shadow-xl select-none ' + (selectedDone ? 'bg-emerald-600 text-white' : 'bg-slate-900 dark:bg-emerald-600 text-white')
+  }, /*#__PURE__*/React.createElement(Icon, {
+    name: selectedDone ? 'checkCircle' : 'hand',
+    size: 42,
+    strokeWidth: selectedDone ? 2.5 : 2
+  }), /*#__PURE__*/React.createElement("span", {
+    className: "text-sm font-black uppercase tracking-widest"
+  }, selectedDone ? 'Selesai' : 'Pencet Counter'), /*#__PURE__*/React.createElement("span", {
+    className: "text-[10px] font-black uppercase tracking-widest text-white/70 tabular-nums"
+  }, selectedCount, "/", selectedItem.target)), /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-3 mt-4"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => updateCount(selectedItem, -1),
+    disabled: selectedCount === 0,
+    className: "w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-black text-xl active:scale-90 disabled:opacity-40 transition-all"
+  }, "\u2212"), /*#__PURE__*/React.createElement("div", {
+    className: "flex-1"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: 'h-full rounded-full transition-all duration-500 ' + (selectedDone ? 'bg-emerald-500' : 'bg-emerald-300 dark:bg-emerald-700'),
+    style: {
+      width: selectedPct + '%'
+    }
   })), /*#__PURE__*/React.createElement("div", {
-    className: "space-y-3"
-  }, session.items.map(item => {
-    const count = sessionCounts[item.id] || 0;
-    const done = count >= item.target;
-    const itemPct = Math.min(100, Math.round(count / item.target * 100));
-    const pop = activeKey === session.id + '-' + item.id + '-' + count;
-    return /*#__PURE__*/React.createElement("div", {
-      key: item.id,
-      className: 'rounded-[2rem] p-5 border-2 transition-all ' + (done ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800')
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "flex items-start justify-between gap-3 mb-4"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "min-w-0"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: 'text-lg font-black leading-tight ' + (done ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-800 dark:text-slate-200')
-    }, item.text), /*#__PURE__*/React.createElement("div", {
-      className: "text-[9px] font-black uppercase tracking-widest text-slate-400 mt-1"
-    }, done ? 'Target tercapai' : 'Target ' + item.target + ' hitungan')), /*#__PURE__*/React.createElement("div", {
-      className: 'text-3xl font-black tabular-nums transition-transform ' + (pop ? 'scale-110' : '') + ' ' + (done ? 'text-emerald-600' : 'text-slate-800 dark:text-slate-200')
-    }, count)), /*#__PURE__*/React.createElement("button", {
-      onClick: () => updateCount(item, 1),
-      className: 'w-full h-36 rounded-[2rem] flex flex-col items-center justify-center gap-2 active:scale-[.97] transition-all shadow-xl select-none ' + (done ? 'bg-emerald-600 text-white' : 'bg-slate-900 dark:bg-emerald-600 text-white')
-    }, /*#__PURE__*/React.createElement(Icon, {
-      name: done ? 'checkCircle' : 'hand',
-      size: 38,
-      strokeWidth: done ? 2.5 : 2
-    }), /*#__PURE__*/React.createElement("span", {
-      className: "text-xs font-black uppercase tracking-widest"
-    }, done ? 'Selesai' : 'Pencet Counter')), /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center gap-3 mt-4"
-    }, /*#__PURE__*/React.createElement("button", {
-      onClick: () => updateCount(item, -1),
-      disabled: count === 0,
-      className: "w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400 font-black text-xl active:scale-90 disabled:opacity-40 transition-all"
-    }, "\u2212"), /*#__PURE__*/React.createElement("div", {
-      className: "flex-1"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: "h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden"
-    }, /*#__PURE__*/React.createElement("div", {
-      className: 'h-full rounded-full transition-all duration-500 ' + (done ? 'bg-emerald-500' : 'bg-emerald-300 dark:bg-emerald-700'),
-      style: {
-        width: itemPct + '%'
-      }
-    })), /*#__PURE__*/React.createElement("div", {
-      className: "flex justify-between text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1 tabular-nums"
-    }, /*#__PURE__*/React.createElement("span", null, count, "/", item.target), /*#__PURE__*/React.createElement("span", null, itemPct, "%")))));
-  })), /*#__PURE__*/React.createElement("button", {
+    className: "flex justify-between text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1 tabular-nums"
+  }, /*#__PURE__*/React.createElement("span", null, selectedCount, "/", selectedItem.target), /*#__PURE__*/React.createElement("span", null, selectedPct, "%"))))), /*#__PURE__*/React.createElement("button", {
     onClick: resetSession,
     className: "w-full bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 text-slate-400 font-black py-4 rounded-2xl text-[9px] uppercase tracking-widest flex items-center justify-center gap-2 active:scale-95 transition-transform shadow-lg"
   }, /*#__PURE__*/React.createElement(Icon, {
