@@ -53,7 +53,7 @@ App ini single-file React tanpa bundler (Vite/Webpack). Semua komponen ada di `a
 | Komponen | Fungsi |
 |---|---|
 | `App` | Root component, semua state global ada di sini |
-| `PrayerView` | Jadwal sholat (fetch dari aladhan.com API) |
+| `DzikirView` | Counter dzikir pagi/petang dengan feedback suara + getar |
 | `MonthlyCalendar` | Kalender baca + toggle haid per hari |
 | `KhatamTarget` | Hitung target khatam berdasarkan tanggal |
 | `JuzTrack` | Visual progress bar per juz |
@@ -83,8 +83,8 @@ Semua data persist di `localStorage` dengan key prefix `q-`:
 | `q-target-mode` | `'juz'` atau `'halaman'` |
 | `q-page-target` | Target halaman per hari |
 | `q-khatam-target` | Tanggal target khatam |
-| `prayer-city` | Kota terakhir untuk jadwal sholat |
-| `prayer-cache` | Cache jadwal sholat hari ini |
+| `q-dzikir-active` | Sesi dzikir terakhir dibuka (`pagi` atau `petang`) |
+| `q-dzikir-counts` | Counter dzikir harian per sesi |
 
 ## Service Worker
 
@@ -93,7 +93,7 @@ Cache strategy di `sw.js`:
 - **CDN external** (React, Google Fonts) → cache first, fallback network
 - **Asset lokal** (`app.js`, `style.css`, dll) → cache first
 
-Setiap kali deploy versi baru, **update `CACHE_NAME`** di `sw.js` (misal `v7` → `v8`) supaya SW lama di-invalidate dan user dapat versi terbaru.
+Setiap kali deploy versi baru, **update `CACHE_NAME`** di `sw.js` (misal `v8` → `v9`) supaya SW lama di-invalidate dan user dapat versi terbaru.
 
 ## Performance
 
