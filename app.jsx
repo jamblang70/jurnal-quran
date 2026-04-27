@@ -476,12 +476,33 @@ function DzikirView() {
                         {DZIKIR_SESSIONS.map(s => <option key={s.id} value={s.id}>{s.icon} {s.title}</option>)}
                     </select>
                 </label>
-                <label className="block">
+                <div>
                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Pilih Bacaan Dzikir</span>
-                    <select value={selectedItem.id} onChange={e => setSelectedItemId(e.target.value)} className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-black outline-none focus:border-emerald-500 transition-colors dark:text-slate-200">
-                        {session.items.map(item => <option key={item.id} value={item.id}>{item.title} — {item.target}x</option>)}
-                    </select>
-                </label>
+                    <div className="space-y-2">
+                        {session.items.map((item, idx) => {
+                            const count = sessionCounts[item.id] || 0;
+                            const done = count >= item.target;
+                            const active = item.id === selectedItem.id;
+                            return (
+                                <button
+                                    key={item.id}
+                                    onClick={() => setSelectedItemId(item.id)}
+                                    className={'w-full flex items-center gap-3 px-4 py-3 rounded-2xl border-2 transition-all active:scale-[.98] text-left ' + (active ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30' : 'border-slate-100 dark:border-slate-700 bg-slate-50 dark:bg-slate-800')}
+                                >
+                                    <div className={'w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 text-[10px] font-black ' + (done ? 'bg-emerald-500 text-white' : active ? 'bg-emerald-100 dark:bg-emerald-900 text-emerald-600 dark:text-emerald-400' : 'bg-slate-200 dark:bg-slate-700 text-slate-400')}>
+                                        {done ? '✓' : idx + 1}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <div className={'text-sm font-black truncate ' + (done ? 'text-emerald-600 dark:text-emerald-400' : active ? 'text-emerald-700 dark:text-emerald-300' : 'text-slate-700 dark:text-slate-300')}>{item.title}</div>
+                                        <div className="text-[9px] font-black text-slate-400 uppercase tracking-widest tabular-nums">{count}/{item.target}x</div>
+                                    </div>
+                                    {done && <Icon name="checkCircle" size={18} className="text-emerald-500 flex-shrink-0" />}
+                                    {active && !done && <Icon name="chevronRight" size={16} className="text-emerald-500 flex-shrink-0" strokeWidth={3} />}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
             </div>
 
             <div className={'rounded-[2rem] p-5 border-2 transition-all ' + (selectedDone ? 'bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800' : 'bg-white dark:bg-slate-900 border-slate-100 dark:border-slate-800')}>
