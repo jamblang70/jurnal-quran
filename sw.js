@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jurnal-quran-v8';
+const CACHE_NAME = 'jurnal-quran-v9';
 
 const APP_SHELL = [
   '/',
