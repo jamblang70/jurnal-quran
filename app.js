@@ -847,14 +847,28 @@ const DZIKIR_SESSIONS = [{
     title: 'Istighfar',
     arabic: 'أَسْتَغْفِرُ اللّٰهَ، أَسْتَغْفِرُ اللّٰهَ، أَسْتَغْفِرُ اللّٰهَ',
     latin: 'Astaghfirullah, Astaghfirullah, Astaghfirullah',
-    note: 'HR. Muslim - Dibaca 3 kali',
+    note: 'HR. Muslim no. 591',
     target: 3
   }, {
     id: 'doa-setelah-salam',
-    title: 'Doa Setelah Salam',
+    title: 'Allahumma Antas Salam',
     arabic: 'اللّٰهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ، تَبَارَكْتَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ',
     latin: 'Allahumma antas salam wa minkas salam, tabarakta ya dzal jalali wal ikram',
-    note: 'HR. Muslim',
+    note: 'HR. Muslim no. 591',
+    target: 1
+  }, {
+    id: 'tahlil-panjang',
+    title: 'Tahlil (Versi Panjang)',
+    arabic: 'لَا إِلٰهَ إِلَّا اللّٰهُ وَحْدَهُ لَا شَرِيْكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيْرٌ، لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللّٰهِ، لَا إِلٰهَ إِلَّا اللّٰهُ، وَلَا نَعْبُدُ إِلَّا إِيَّاهُ، لَهُ النِّعْمَةُ وَلَهُ الْفَضْلُ، وَلَهُ الثَّنَاءُ الْحَسَنُ، لَا إِلٰهَ إِلَّا اللّٰهُ مُخْلِصِينَ لَهُ الدِّينَ وَلَوْ كَرِهَ الْكَافِرُونَ',
+    latin: 'Laa ilaha illallahu wahdahu laa syarika lahu, lahul mulku wa lahul hamdu wa huwa \'ala kulli syai-in qadiir. Laa haula wa laa quwwata illa billah. Laa ilaha illallah wa laa na\'budu illa iyyah. Lahun ni\'matu wa lahul fadhlu wa lahuts tsanaa-ul hasanu. Laa ilaha illallah mukhlishiina lahud diin wa lau karihal kaafiruun',
+    note: 'HR. Muslim no. 594',
+    target: 1
+  }, {
+    id: 'laa-maania',
+    title: 'Allahumma Laa Maani\'a',
+    arabic: 'اللّٰهُمَّ لَا مَانِعَ لِمَا أَعْطَيْتَ، وَلَا مُعْطِيَ لِمَا مَنَعْتَ، وَلَا يَنْفَعُ ذَا الْجَدِّ مِنْكَ الْجَدُّ',
+    latin: 'Allahumma laa maani\'a lima a\'thayta, wa laa mu\'thiya limaa mana\'ta, wa laa yanfa\'u dzal jaddi minkal jaddu',
+    note: 'HR. Bukhari no. 6615, Muslim no. 593',
     target: 1
   }, {
     id: 'tasbih',
@@ -875,21 +889,35 @@ const DZIKIR_SESSIONS = [{
     title: 'Takbir',
     arabic: 'اللّٰهُ أَكْبَرُ',
     latin: 'Allahu Akbar',
-    note: 'HR. Bukhari & Muslim - 34 kali',
+    note: 'HR. Muslim no. 596 - 34 kali',
     target: 34
   }, {
     id: 'tahlil-100',
-    title: 'Tahlil Penyempurna',
+    title: 'Tahlil Penyempurna 100',
     arabic: 'لَا إِلٰهَ إِلَّا اللّٰهُ وَحْدَهُ لَا شَرِيْكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيْرٌ',
-    latin: 'La ilaha illallahu wahdahu la syarika lah, lahul mulku wa lahul hamdu, wa huwa ala kulli syai-in qadir',
-    note: 'HR. Muslim - Penyempurna 100 hitungan',
+    latin: 'Laa ilaha illallahu wahdahu laa syarika lahu, lahul mulku wa lahul hamdu, wa huwa \'ala kulli syai-in qadiir',
+    note: 'HR. Muslim no. 597 - Penyempurna 100 hitungan',
     target: 1
   }, {
     id: 'kursi-fardhu',
     title: 'Ayat Kursi',
     arabic: 'اللّٰهُ لَا إِلٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمٰوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِيْ يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيْهِمْ وَمَا خَلْفَهُمْ ۚ وَلَا يُحِيْطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمٰوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيْمُ',
-    latin: 'Allahu la ilaha illa huwal hayyul qayyum...',
-    note: 'QS. Al-Baqarah:255',
+    latin: 'Allahu laa ilaha illa huwal hayyul qayyum, laa ta-khuzuhu sinatuw wa laa naum...',
+    note: 'HR. An-Nasai no. 9928 - QS. Al-Baqarah:255',
+    target: 1
+  }, {
+    id: 'muawwidzat',
+    title: 'Al-Ikhlas, Al-Falaq, An-Nas',
+    arabic: 'قُلْ هُوَ اللّٰهُ أَحَدٌ، اللّٰهُ الصَّمَدُ، لَمْ يَلِدْ وَلَمْ يُولَدْ، وَلَمْ يَكُنْ لَهُ كُفُوًا أَحَدٌ • قُلْ أَعُوذُ بِرَبِّ الْفَلَقِ، مِنْ شَرِّ مَا خَلَقَ... • قُلْ أَعُوذُ بِرَبِّ النَّاسِ، مَلِكِ النَّاسِ، إِلٰهِ النَّاسِ...',
+    latin: 'Qul huwallahu ahad... Qul a\'udzu bi rabbil falaq... Qul a\'udzu bi rabbin naas...',
+    note: 'HR. Abu Dawud no. 1523 - Dibaca 3 kali',
+    target: 3
+  }, {
+    id: 'doa-muadz',
+    title: 'Doa Mu\'adz',
+    arabic: 'اللّٰهُمَّ أَعِنِّي عَلَى ذِكْرِكَ وَشُكْرِكَ وَحُسْنِ عِبَادَتِكَ',
+    latin: 'Allahumma a\'inni \'ala dzikrika wa syukrika wa husni \'ibaadatika',
+    note: 'HR. Abu Dawud no. 1522 - Wasiat Nabi kepada Mu\'adz',
     target: 1
   }]
 }];
@@ -1080,6 +1108,8 @@ function DzikirView() {
   const [activeSession, setActiveSession] = useState(() => loadLocal('q-dzikir-active', 'pagi'));
   const [selectedItemId, setSelectedItemId] = useState(() => loadLocal('q-dzikir-selected', 'kursi'));
   const [autoNext, setAutoNext] = useState(() => loadLocal('q-dzikir-auto-next', false));
+  const [arabicFontSize, setArabicFontSize] = useState(() => loadLocal('q-dzikir-font-size', 'medium'));
+  const [showLatin, setShowLatin] = useState(() => loadLocal('q-dzikir-show-latin', true));
   const [counts, setCounts] = useState(() => {
     const stored = loadLocal('q-dzikir-counts', null);
     if (stored && stored.date === today) return stored;
@@ -1101,6 +1131,12 @@ function DzikirView() {
   useEffect(() => {
     saveLocal('q-dzikir-auto-next', autoNext);
   }, [autoNext]);
+  useEffect(() => {
+    saveLocal('q-dzikir-font-size', arabicFontSize);
+  }, [arabicFontSize]);
+  useEffect(() => {
+    saveLocal('q-dzikir-show-latin', showLatin);
+  }, [showLatin]);
   useEffect(() => {
     saveLocal('q-dzikir-counts', counts);
   }, [counts]);
@@ -1241,6 +1277,13 @@ function DzikirView() {
   const selectedDone = selectedCount >= selectedItem.target;
   const selectedPct = Math.min(100, Math.round(selectedCount / selectedItem.target * 100));
   const selectedPop = activeKey === session.id + '-' + selectedItem.id + '-' + selectedCount;
+
+  // Font size mapping
+  const fontSizeMap = {
+    small: 'text-xl',
+    medium: 'text-2xl',
+    large: 'text-3xl'
+  };
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-4 anim-fadeup"
   }, /*#__PURE__*/React.createElement("div", {
@@ -1286,6 +1329,23 @@ function DzikirView() {
   }, totalCount, " / ", totalTarget, " hitungan ", allDone ? '• Selesai' : '')))), /*#__PURE__*/React.createElement("div", {
     className: "bg-white dark:bg-slate-900 rounded-[2rem] p-5 shadow-xl border border-slate-100 dark:border-slate-800 space-y-4"
   }, /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 gap-4 pb-4 border-b border-slate-100 dark:border-slate-800"
+  }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2"
+  }, "Ukuran Font Arab"), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2"
+  }, ['small', 'medium', 'large'].map(size => /*#__PURE__*/React.createElement("button", {
+    key: size,
+    onClick: () => setArabicFontSize(size),
+    className: 'px-4 py-2 rounded-xl font-black text-xs uppercase transition-all ' + (arabicFontSize === size ? 'bg-emerald-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500 dark:text-slate-400')
+  }, size === 'small' ? 'S' : size === 'medium' ? 'M' : 'L')))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
+    className: "text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2"
+  }, "Tampilkan Latin"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setShowLatin(!showLatin),
+    className: 'relative w-14 h-8 rounded-full transition-all ' + (showLatin ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700')
+  }, /*#__PURE__*/React.createElement("div", {
+    className: 'absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all ' + (showLatin ? 'left-7' : 'left-1')
+  })))), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("div", {
     className: "text-sm font-black text-slate-700 dark:text-slate-200"
@@ -1356,8 +1416,8 @@ function DzikirView() {
     className: "bg-slate-50 dark:bg-slate-800/80 rounded-[1.7rem] p-5 mb-4 border border-slate-100 dark:border-slate-700"
   }, /*#__PURE__*/React.createElement("p", {
     dir: "rtl",
-    className: "arabic-text font-bold text-2xl leading-loose text-slate-900 dark:text-slate-100 text-right"
-  }, selectedItem.arabic), /*#__PURE__*/React.createElement("p", {
+    className: 'arabic-text font-bold ' + fontSizeMap[arabicFontSize] + ' leading-loose text-slate-900 dark:text-slate-100 text-right'
+  }, selectedItem.arabic), showLatin && /*#__PURE__*/React.createElement("p", {
     className: "mt-4 text-xs font-bold leading-relaxed text-slate-500 dark:text-slate-400"
   }, selectedItem.latin)), /*#__PURE__*/React.createElement("button", {
     onClick: () => updateCount(selectedItem, 1),
