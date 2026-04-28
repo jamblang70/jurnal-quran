@@ -265,6 +265,72 @@ const DZIKIR_SESSIONS = [
                 target: 100
             }
         ]
+    },
+    {
+        id: 'sholat-fardhu',
+        label: 'Sholat Fardhu',
+        title: 'Dzikir Setelah Sholat Fardhu',
+        time: 'Setelah Sholat 5 Waktu',
+        gradient: 'from-emerald-500 via-teal-600 to-cyan-700',
+        icon: '🕌',
+        items: [
+            {
+                id: 'istighfar',
+                title: 'Istighfar',
+                arabic: 'أَسْتَغْفِرُ اللّٰهَ، أَسْتَغْفِرُ اللّٰهَ، أَسْتَغْفِرُ اللّٰهَ',
+                latin: 'Astaghfirullah, Astaghfirullah, Astaghfirullah',
+                note: 'HR. Muslim - Dibaca 3 kali',
+                target: 3
+            },
+            {
+                id: 'doa-setelah-salam',
+                title: 'Doa Setelah Salam',
+                arabic: 'اللّٰهُمَّ أَنْتَ السَّلَامُ وَمِنْكَ السَّلَامُ، تَبَارَكْتَ يَا ذَا الْجَلَالِ وَالْإِكْرَامِ',
+                latin: 'Allahumma antas salam wa minkas salam, tabarakta ya dzal jalali wal ikram',
+                note: 'HR. Muslim',
+                target: 1
+            },
+            {
+                id: 'tasbih',
+                title: 'Tasbih',
+                arabic: 'سُبْحَانَ اللّٰهِ',
+                latin: 'Subhanallah',
+                note: 'HR. Bukhari & Muslim - 33 kali',
+                target: 33
+            },
+            {
+                id: 'tahmid',
+                title: 'Tahmid',
+                arabic: 'الْحَمْدُ لِلّٰهِ',
+                latin: 'Alhamdulillah',
+                note: 'HR. Bukhari & Muslim - 33 kali',
+                target: 33
+            },
+            {
+                id: 'takbir',
+                title: 'Takbir',
+                arabic: 'اللّٰهُ أَكْبَرُ',
+                latin: 'Allahu Akbar',
+                note: 'HR. Bukhari & Muslim - 34 kali',
+                target: 34
+            },
+            {
+                id: 'tahlil-100',
+                title: 'Tahlil Penyempurna',
+                arabic: 'لَا إِلٰهَ إِلَّا اللّٰهُ وَحْدَهُ لَا شَرِيْكَ لَهُ، لَهُ الْمُلْكُ وَلَهُ الْحَمْدُ، وَهُوَ عَلَى كُلِّ شَيْءٍ قَدِيْرٌ',
+                latin: 'La ilaha illallahu wahdahu la syarika lah, lahul mulku wa lahul hamdu, wa huwa ala kulli syai-in qadir',
+                note: 'HR. Muslim - Penyempurna 100 hitungan',
+                target: 1
+            },
+            {
+                id: 'kursi-fardhu',
+                title: 'Ayat Kursi',
+                arabic: 'اللّٰهُ لَا إِلٰهَ إِلَّا هُوَ الْحَيُّ الْقَيُّومُ ۚ لَا تَأْخُذُهُ سِنَةٌ وَلَا نَوْمٌ ۚ لَهُ مَا فِي السَّمٰوَاتِ وَمَا فِي الْأَرْضِ ۗ مَنْ ذَا الَّذِيْ يَشْفَعُ عِنْدَهُ إِلَّا بِإِذْنِهِ ۚ يَعْلَمُ مَا بَيْنَ أَيْدِيْهِمْ وَمَا خَلْفَهُمْ ۚ وَلَا يُحِيْطُونَ بِشَيْءٍ مِّنْ عِلْمِهِ إِلَّا بِمَا شَاءَ ۚ وَسِعَ كُرْسِيُّهُ السَّمٰوَاتِ وَالْأَرْضَ ۖ وَلَا يَئُودُهُ حِفْظُهُمَا ۚ وَهُوَ الْعَلِيُّ الْعَظِيْمُ',
+                latin: 'Allahu la ilaha illa huwal hayyul qayyum...',
+                note: 'QS. Al-Baqarah:255',
+                target: 1
+            }
+        ]
     }
 ];
 
@@ -368,16 +434,66 @@ function DzikirView() {
     const audioRef = useRef(null);
     const [activeSession, setActiveSession] = useState(() => loadLocal('q-dzikir-active', 'pagi'));
     const [selectedItemId, setSelectedItemId] = useState(() => loadLocal('q-dzikir-selected', 'kursi'));
+    const [autoNext, setAutoNext] = useState(() => loadLocal('q-dzikir-auto-next', false));
     const [counts, setCounts] = useState(() => {
         const stored = loadLocal('q-dzikir-counts', null);
         if (stored && stored.date === today) return stored;
-        return { date: today, pagi: {}, petang: {} };
+        return { date: today, pagi: {}, petang: {}, 'sholat-fardhu': {} };
     });
+    const [streaks, setStreaks] = useState(() => loadLocal('q-dzikir-streaks', {}));
     const [activeKey, setActiveKey] = useState(null);
 
     useEffect(() => { saveLocal('q-dzikir-active', activeSession); }, [activeSession]);
     useEffect(() => { saveLocal('q-dzikir-selected', selectedItemId); }, [selectedItemId]);
+    useEffect(() => { saveLocal('q-dzikir-auto-next', autoNext); }, [autoNext]);
     useEffect(() => { saveLocal('q-dzikir-counts', counts); }, [counts]);
+    useEffect(() => { saveLocal('q-dzikir-streaks', streaks); }, [streaks]);
+
+    // Check and update streaks
+    useEffect(() => {
+        const checkStreaks = () => {
+            const newStreaks = { ...streaks };
+            let updated = false;
+
+            DZIKIR_SESSIONS.forEach(session => {
+                const sessionCounts = counts[session.id] || {};
+                const allDone = session.items.every(item => (sessionCounts[item.id] || 0) >= item.target);
+                const streakData = streaks[session.id] || { count: 0, lastDate: null };
+                
+                if (allDone && streakData.lastDate !== today) {
+                    // Session completed today for the first time
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayKey = yesterday.toLocaleDateString('en-CA');
+                    
+                    if (streakData.lastDate === yesterdayKey) {
+                        // Continue streak
+                        newStreaks[session.id] = { count: streakData.count + 1, lastDate: today };
+                    } else if (streakData.lastDate === null || streakData.lastDate < yesterdayKey) {
+                        // Start new streak
+                        newStreaks[session.id] = { count: 1, lastDate: today };
+                    }
+                    updated = true;
+                } else if (!allDone && streakData.lastDate && streakData.lastDate < today) {
+                    // Check if streak should be reset (missed yesterday)
+                    const yesterday = new Date();
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    const yesterdayKey = yesterday.toLocaleDateString('en-CA');
+                    
+                    if (streakData.lastDate < yesterdayKey) {
+                        newStreaks[session.id] = { count: 0, lastDate: null };
+                        updated = true;
+                    }
+                }
+            });
+
+            if (updated) {
+                setStreaks(newStreaks);
+            }
+        };
+
+        checkStreaks();
+    }, [counts, today]);
 
     function getAudio() {
         if (!window.AudioContext && !window.webkitAudioContext) return null;
@@ -410,6 +526,8 @@ function DzikirView() {
         const current = (counts[activeSession] || {})[item.id] || 0;
         const nextCount = Math.max(0, Math.min(item.target, current + delta));
         const done = nextCount === item.target;
+        const wasNotDone = current < item.target;
+        
         if (nextCount === current) {
             if (delta > 0 && done) {
                 vibrate(true);
@@ -424,6 +542,20 @@ function DzikirView() {
             const sessionCounts = prev[activeSession] || {};
             return Object.assign({}, prev, { [activeSession]: Object.assign({}, sessionCounts, { [item.id]: nextCount }) });
         });
+        
+        // Auto-next logic: if just completed and auto-next is enabled
+        if (done && wasNotDone && autoNext) {
+            const session = DZIKIR_SESSIONS.find(s => s.id === activeSession);
+            if (session) {
+                const currentIdx = session.items.findIndex(i => i.id === item.id);
+                const nextItem = session.items[currentIdx + 1];
+                if (nextItem) {
+                    setTimeout(() => {
+                        setSelectedItemId(nextItem.id);
+                    }, 500);
+                }
+            }
+        }
     }
 
     function resetSession() {
@@ -434,6 +566,7 @@ function DzikirView() {
     const session = DZIKIR_SESSIONS.find(s => s.id === activeSession) || DZIKIR_SESSIONS[0];
     const selectedItem = session.items.find(item => item.id === selectedItemId) || session.items[0];
     const sessionCounts = counts[session.id] || {};
+    const sessionStreak = (streaks[session.id] || {}).count || 0;
     const totalTarget = session.items.reduce((sum, item) => sum + item.target, 0);
     const totalCount = session.items.reduce((sum, item) => sum + (sessionCounts[item.id] || 0), 0);
     const pct = Math.min(100, Math.round((totalCount / totalTarget) * 100));
@@ -452,6 +585,12 @@ function DzikirView() {
                         <div>
                             <div className="text-[9px] font-black uppercase tracking-widest text-white/70 mb-1">{session.time}</div>
                             <h2 className="text-3xl font-black tracking-tight">{session.title}</h2>
+                            {sessionStreak > 0 && (
+                                <div className="mt-2 inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-sm px-3 py-1.5 rounded-full border border-white/30">
+                                    <span className="text-lg">🔥</span>
+                                    <span className="text-sm font-black">{sessionStreak} hari streak</span>
+                                </div>
+                            )}
                         </div>
                         <div className="text-5xl drop-shadow">{session.icon}</div>
                     </div>
@@ -469,6 +608,18 @@ function DzikirView() {
             </div>
 
             <div className="bg-white dark:bg-slate-900 rounded-[2rem] p-5 shadow-xl border border-slate-100 dark:border-slate-800 space-y-4">
+                <div className="flex items-center justify-between pb-4 border-b border-slate-100 dark:border-slate-800">
+                    <div>
+                        <div className="text-sm font-black text-slate-700 dark:text-slate-200">Mode Auto-Next</div>
+                        <div className="text-[9px] font-black uppercase tracking-widest text-slate-400 mt-0.5">Otomatis lanjut dzikir berikutnya</div>
+                    </div>
+                    <button
+                        onClick={() => setAutoNext(!autoNext)}
+                        className={'relative w-14 h-8 rounded-full transition-all ' + (autoNext ? 'bg-emerald-500' : 'bg-slate-200 dark:bg-slate-700')}
+                    >
+                        <div className={'absolute top-1 w-6 h-6 bg-white rounded-full shadow-md transition-all ' + (autoNext ? 'left-7' : 'left-1')} />
+                    </button>
+                </div>
                 <label className="block">
                     <span className="text-[9px] font-black uppercase tracking-widest text-slate-400 mb-2 block">Pilih Waktu Dzikir</span>
                     <select value={activeSession} onChange={e => { setActiveSession(e.target.value); setSelectedItemId('kursi'); }} className="w-full bg-slate-50 dark:bg-slate-800 border-2 border-slate-100 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm font-black outline-none focus:border-emerald-500 transition-colors dark:text-slate-200">
@@ -513,7 +664,7 @@ function DzikirView() {
                     <div className={'text-3xl font-black tabular-nums transition-transform ' + (selectedPop ? 'scale-110' : '') + ' ' + (selectedDone ? 'text-emerald-600' : 'text-slate-800 dark:text-slate-200')}>{selectedCount}</div>
                 </div>
                 <div className="bg-slate-50 dark:bg-slate-800/80 rounded-[1.7rem] p-5 mb-4 border border-slate-100 dark:border-slate-700">
-                    <p dir="rtl" className="font-black text-2xl leading-loose text-slate-900 dark:text-slate-100 text-right">{selectedItem.arabic}</p>
+                    <p dir="rtl" className="arabic-text font-bold text-2xl leading-loose text-slate-900 dark:text-slate-100 text-right">{selectedItem.arabic}</p>
                     <p className="mt-4 text-xs font-bold leading-relaxed text-slate-500 dark:text-slate-400">{selectedItem.latin}</p>
                 </div>
                 <button onClick={() => updateCount(selectedItem, 1)} className={'w-full h-40 rounded-[2rem] flex flex-col items-center justify-center gap-2 active:scale-[.97] transition-all shadow-xl select-none ' + (selectedDone ? 'bg-emerald-600 text-white' : 'bg-slate-900 dark:bg-emerald-600 text-white')}>
@@ -535,7 +686,7 @@ function DzikirView() {
                 {(() => {
                     const currentIdx = session.items.findIndex(item => item.id === selectedItem.id);
                     const nextItem = session.items[currentIdx + 1];
-                    if (!selectedDone || !nextItem) return null;
+                    if (!selectedDone || !nextItem || autoNext) return null;
                     return (
                         <button
                             onClick={() => setSelectedItemId(nextItem.id)}

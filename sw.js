@@ -1,4 +1,4 @@
-const CACHE_NAME = 'jurnal-quran-v11';
+const CACHE_NAME = 'jurnal-quran-v15';
 
 const APP_SHELL = [
   '/',
@@ -13,7 +13,8 @@ const APP_SHELL = [
 const EXTERNAL_CACHE = [
   'https://unpkg.com/react@18/umd/react.production.min.js',
   'https://unpkg.com/react-dom@18/umd/react-dom.production.min.js',
-  'https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800;900&display=swap'
+  'https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;800;900&display=swap',
+  'https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap'
 ];
 
 self.addEventListener('install', event => {
