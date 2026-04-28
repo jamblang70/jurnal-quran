@@ -1368,7 +1368,7 @@ function DzikirView() {
     strokeWidth: selectedDone ? 2.5 : 2
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-sm font-black uppercase tracking-widest"
-  }, selectedDone ? 'Selesai' : 'Pencet Counter'), /*#__PURE__*/React.createElement("span", {
+  }, selectedDone ? 'Selesai' : 'Dzikr Counter'), /*#__PURE__*/React.createElement("span", {
     className: "text-[10px] font-black uppercase tracking-widest text-white/70 tabular-nums"
   }, selectedCount, "/", selectedItem.target)), /*#__PURE__*/React.createElement("div", {
     className: "flex items-center gap-3 mt-4"

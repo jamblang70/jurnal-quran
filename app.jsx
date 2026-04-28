@@ -669,7 +669,7 @@ function DzikirView() {
                 </div>
                 <button onClick={() => updateCount(selectedItem, 1)} className={'w-full h-40 rounded-[2rem] flex flex-col items-center justify-center gap-2 active:scale-[.97] transition-all shadow-xl select-none ' + (selectedDone ? 'bg-emerald-600 text-white' : 'bg-slate-900 dark:bg-emerald-600 text-white')}>
                     <Icon name={selectedDone ? 'checkCircle' : 'hand'} size={42} strokeWidth={selectedDone ? 2.5 : 2} />
-                    <span className="text-sm font-black uppercase tracking-widest">{selectedDone ? 'Selesai' : 'Pencet Counter'}</span>
+                    <span className="text-sm font-black uppercase tracking-widest">{selectedDone ? 'Selesai' : 'Dzikr Counter'}</span>
                     <span className="text-[10px] font-black uppercase tracking-widest text-white/70 tabular-nums">{selectedCount}/{selectedItem.target}</span>
                 </button>
                 <div className="flex items-center gap-3 mt-4">
